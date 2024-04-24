@@ -11,8 +11,6 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-// Test
-
 typedef short bool;
 #define true 1
 #define false 0
