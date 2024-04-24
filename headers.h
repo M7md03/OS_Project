@@ -17,6 +17,35 @@ typedef short bool;
 
 #define SHKEY 300
 
+struct Process {
+    int ID;
+    int ArrivalT;  // Arrival Time
+    int StartT;    // Start Time
+    int RunT;      // Running Time
+    int RemT;      // Remaining Time
+    int EndT;      // End Time
+    int P;         // Priority
+};
+
+struct Process *Process(int id, int at, int rt, int pr) {
+    struct Process *p =
+        malloc(sizeof(struct Process));  // Dynamically allocate a process
+    if (p == NULL) {
+        printf("Memory allocation failed.\n");
+        exit(1);
+    }
+    p->ID = id;        // Set ID
+    p->ArrivalT = at;  // Set Arrival Time
+    p->RunT = rt;      // Set Running Time
+    p->RemT = rt;      // Set Remaining Time
+    p->P = pr;         // Set Prioroty
+    return p;
+}
+
+void DeProcess(struct Process *p) {
+    free(p);  // Free Memory
+}
+
 ///==============================
 // don't mess with this variable//
 int *shmaddr;  //
@@ -25,9 +54,9 @@ int *shmaddr;  //
 int getClk() { return *shmaddr; }
 
 /*
- * All process call this function at the beginning to establish communication
- * between them and the clock module. Again, remember that the clock is only
- * emulation!
+ * All process call this function at the beginning to establish
+ * communication between them and the clock module. Again, remember that the
+ * clock is only emulation!
  */
 void initClk() {
     int shmid = shmget(SHKEY, 4, 0444);
