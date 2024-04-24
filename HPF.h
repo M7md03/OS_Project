@@ -1,146 +1,112 @@
 #include "headers.h"
 
+struct MinHeap {
+    struct Process** array;  // Array of pointers to Process structs
+    int size;
+    int capacity;
+};
+
 /**
- * Swaps two Process pointers.
+ * Creates a new min heap data structure.
  *
- * This function takes two pointers to Process pointer variables and swaps their
- * values. It is used to rearrange processes in a heap data structure without
- * copying the entire Process structure, thus improving efficiency.
- *
- * @param a A pointer to the first Process pointer to be swapped.
- * @param b A pointer to the second Process pointer to be swapped.
+ * @return a pointer to the newly created min heap, or NULL if memory allocation fails
  */
-void swap(struct Process **a, struct Process **b) {
-    struct Process *temp = *a;
+struct MinHeap* MinHeap() {
+    struct MinHeap* minHeap = (struct MinHeap*)malloc(sizeof(struct MinHeap));  // Dynamically allocate a min heap
+    minHeap->capacity = 2;                                                      // Initial capacity
+    minHeap->size = 0;
+    minHeap->array = (struct Process**)malloc(
+        minHeap->capacity * sizeof(struct Process*));  // Dynamically allocate memory for the array of pointers
+    return minHeap;
+}
+
+/**
+ * Swaps two elements in an array.
+ *
+ * @param a a pointer to the first element
+ * @param b a pointer to the second element
+ */
+void swap(struct Process** a, struct Process** b) {
+    struct Process* temp = *a;
     *a = *b;
     *b = temp;
 }
 
 /**
- * Maintains the min heap property for a given subtree.
+ * Fixes the min heap property of an element at a specific index.
  *
- * This function ensures that the subtree rooted at index `i` in the array `arr`
- * of Process pointers satisfies the min heap property. If the current node
- * violates the min heap property (i.e., it is larger than either of its
- * children), the function recursively adjusts the subtree by swapping the
- * current node with its smallest child and then calling itself on the location
- * of the smallest child.
- *
- * @param arr An array of pointers to Process structures representing the heap.
- * @param i The index of the current node in the array `arr` that is being
- * heapified.
- * @param size The total number of elements in the heap.
+ * @param minHeap a pointer to the min heap
+ * @param i the index of the element to fix
  */
-void minHeapify(struct Process **arr, int i, int size) {
-    int smallest = i;       // Initialize the smallest as root
-    int left = 2 * i + 1;   // Calculate index of left child
-    int right = 2 * i + 2;  // Calculate index of right child
+void minHeapify(struct MinHeap* minHeap, int i) {
+    int smallest = i;
+    int left = 2 * i + 1;
+    int right = 2 * i + 2;
 
-    // If left child is smaller than root
-    if (left < size && arr[left]->P < arr[smallest]->P) smallest = left;
+    if (left < minHeap->size && (minHeap->array[left]->P < minHeap->array[smallest]->P ||
+                                 (minHeap->array[left]->P == minHeap->array[smallest]->P &&
+                                  minHeap->array[left]->ArrivalT < minHeap->array[smallest]->ArrivalT)))
+        smallest = left;
 
-    // If right child is smaller than smallest so far
-    if (right < size && arr[right]->P < arr[smallest]->P) smallest = right;
+    if (right < minHeap->size && (minHeap->array[right]->P < minHeap->array[smallest]->P ||
+                                  (minHeap->array[right]->P == minHeap->array[smallest]->P &&
+                                   minHeap->array[right]->ArrivalT < minHeap->array[smallest]->ArrivalT)))
+        smallest = right;
 
-    // If smallest is not root
     if (smallest != i) {
-        // Swap the current node with its smallest child
-        swap(&arr[i], &arr[smallest]);
-        // Recursively heapify the affected sub-tree
-        minHeapify(arr, smallest, size);
+        swap(&minHeap->array[i], &minHeap->array[smallest]);
+        minHeapify(minHeap, smallest);
     }
 }
 
 /**
- * Builds a min heap from an unsorted array of Process pointers.
+ * Inserts a new process into a min heap.
  *
- * This function iteratively applies the minHeapify function to all non-leaf
- * nodes of the array, starting from the last non-leaf node all the way up to
- * the root. This ensures that the heap property is maintained for every node,
- * effectively converting an unsorted array into a min heap. A min heap is a
- * complete binary tree where the value of each node is less than or equal to
- * the values of its children.
- *
- * @param arr An array of pointers to Process structures that will be organized
- * into a min heap.
- * @param size The number of elements in the array `arr`.
+ * @param minHeap a pointer to the min heap
+ * @param p a pointer to the process to insert
  */
-void buildMinHeap(struct Process **arr, int size) {
-    for (int i = size / 2 - 1; i >= 0; i--) {
-        minHeapify(arr, i, size);
+void insertProcess(struct MinHeap* minHeap, struct Process* p) {
+    if (minHeap->size == minHeap->capacity) {
+        minHeap->capacity *= 2;  // Double the capacity
+        minHeap->array =
+            realloc(minHeap->array, minHeap->capacity * sizeof(struct Process*));  // Resize the array of pointers
+    }
+    int i = minHeap->size;
+    minHeap->size++;
+    minHeap->array[i] = p;
+
+    // Fix the min heap property if it is violated
+    while (i != 0 && (minHeap->array[(i - 1) / 2]->P > minHeap->array[i]->P ||
+                      (minHeap->array[(i - 1) / 2]->P == minHeap->array[i]->P &&
+                       minHeap->array[(i - 1) / 2]->ArrivalT > minHeap->array[i]->ArrivalT))) {
+        swap(&minHeap->array[i], &minHeap->array[(i - 1) / 2]);
+        i = (i - 1) / 2;
     }
 }
 
 /**
- * Inserts a new Process into the min heap.
+ * Extracts and returns the minimum process from a min heap.
  *
- * This function adds a new Process to the heap and then ensures the min heap
- * property is maintained by percolating the new element up the heap until it is
- * in the correct position. The heap size is incremented to accommodate the new
- * element, and the element is inserted at the end of the heap array. The
- * function then adjusts the heap by swapping the new element with its parent
- * until the min heap property is restored.
- *
- * @param arr A pointer to the array of Process pointers representing the heap.
- * @param size A pointer to an integer representing the current size of the
- * heap. This value is incremented to reflect the addition of the new Process.
- * @param p A pointer to the Process to be inserted into the heap.
+ * @param minHeap a pointer to the min heap
+ * @return a pointer to the minimum process, or NULL if the min heap is empty
  */
-void insertProcess(struct Process **arr, int *size, struct Process *p) {
-    (*size)++;  // Increment the size of the heap to accommodate the new element
-    arr[*size - 1] = p;  // Insert the new element at the end of the heap
-    int i = *size - 1;   // Index of the newly inserted element
-    // Percolate up: Swap the new element with its parent until the min heap
-    // property is restored
-    while (i > 0 && arr[(i - 1) / 2]->P > arr[i]->P) {
-        swap(&arr[i], &arr[(i - 1) / 2]);
-        i = (i - 1) / 2;  // Move to the parent index
+struct Process* extractMin(struct MinHeap* minHeap) {
+    if (minHeap->size == 0) return NULL;
+    if (minHeap->size == 1) {
+        minHeap->size--;
+        return minHeap->array[0];
     }
+
+    // Store the minimum value and remove it from the heap
+    struct Process* root = minHeap->array[0];
+    minHeap->array[0] = minHeap->array[minHeap->size - 1];
+    minHeap->size--;
+    minHeapify(minHeap, 0);
+
+    return root;
 }
 
-/**
- * Extracts the minimum Process from the min heap and removes it.
- *
- * This function extracts the Process with the smallest priority from the min
- * heap and removes it. It then restores the min heap property by percolating
- * the remaining elements up the heap. The function returns a pointer to the
- * extracted Process. If the heap is empty, it returns NULL.
- *
- * @param arr A pointer to the array of Process pointers representing the heap.
- * @param size A pointer to an integer representing the current size of the
- * heap. This value is decremented to reflect the removal of the extracted
- * Process.
- * @return A pointer to the Process with the smallest priority, or NULL if the
- * heap is empty.
- */
-struct Process *extractMin(struct Process **arr, int *size) {
-    if (*size == 0) return NULL;
-
-    struct Process *min = arr[0];
-    arr[0] = arr[*size - 1];
-    (*size)--;
-    minHeapify(arr, 0, *size);
-    return min;
-}
-
-/**
- * Schedules the High Priority First (HPF) algorithm on the given array of
- * Process pointers.
- *
- * This function iteratively extracts the Process with the smallest priority
- * from the min heap and removes it, then prints its details and deallocates the
- * memory for the Process. The function continues this process until the heap is
- * empty.
- *
- * @param arr A pointer to the array of Process pointers representing the heap.
- * @param size A pointer to an integer representing the current size of the
- * heap. This value is decremented to reflect the removal of the extracted
- * Process.
- */
-void scheduleHPF(struct Process **arr, int *size) {
-    while (*size > 0) {
-        struct Process *p = extractMin(arr, size);
-        printf("Process ID: %d, Priority: %d\n", p->ID, p->P);
-        DeProcess(p);
-    }
+void FreeMin(struct MinHeap* minHeap) {
+    free(minHeap->array);
+    free(minHeap);
 }
