@@ -68,8 +68,8 @@ void minHeapify(struct MinHeap* minHeap, int i) {
 void insertProcess(struct MinHeap* minHeap, struct Process* p) {
     if (minHeap->size == minHeap->capacity) {
         minHeap->capacity *= 2;  // Double the capacity
-        minHeap->array =
-            realloc(minHeap->array, minHeap->capacity * sizeof(struct Process*));  // Resize the array of pointers
+        minHeap->array = (struct Process**)realloc(
+            minHeap->array, minHeap->capacity * sizeof(struct Process*));  // Resize the array of pointers
     }
     int i = minHeap->size;
     minHeap->size++;

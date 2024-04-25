@@ -1,26 +1,33 @@
-#include "HPF.h"
+
+#include "RR.h"
 
 int main() {
-    // Sample usage
-    struct MinHeap* minHeap = MinHeap();
+    struct RoundRobin *rr = RoundRobin();
 
-    // Insert processes into the min heap
-    insertProcess(minHeap, Process(1, 0, 5, 1));
-    insertProcess(minHeap, Process(2, 2, 4, 2));
-    insertProcess(minHeap, Process(3, 5, 3, 3));
-    insertProcess(minHeap, Process(4, 4, 3, 4));
-    insertProcess(minHeap, Process(5, 8, 3, 1));
-    insertProcess(minHeap, Process(6, 2, 3, 4));
+    // Example usage:
+    struct Process *p1 = Process(1, 0, 5, 2);
+    struct Process *p2 = Process(2, 2, 3, 1);
+    struct Process *p3 = Process(3, 4, 4, 3);
 
-    // Remove processes from the min heap based on priority
-    while (minHeap->size != 0) {
-        struct Process* p = extractMin(minHeap);
-        printf("Process ID: %d, Priority: %d, AT: %d\n", p->ID, p->P, p->ArrivalT);
-        DeProcess(p);
+    enqueue(rr, p1);
+    enqueue(rr, p2);
+    enqueue(rr, p3);
+
+    struct Process *p;
+    int quantum = 2;
+    while (!isEmpty(rr)) {
+        p = dequeue(rr);
+        if (p->RemT <= quantum) {
+            printf("Process with ID %d finished\n", p->ID);
+            p->RemT = 0;
+        } else {
+            p->RemT -= quantum;
+            printf("Process with ID %d processed for quantum, Remaining Time = %d\n", p->ID, p->RemT);
+            enqueue(rr, p);
+        }
     }
 
-    // Free memory
-    FreeMin(minHeap);
+    FreeRoundRobin(rr);
 
     return 0;
 }
