@@ -2,7 +2,7 @@
 #include "RR.h"
 
 int main() {
-    struct RoundRobin *rr = RoundRobin();
+    struct RoundRobin *rr = RoundRobin(2);
 
     // Example usage:
     struct Process *p1 = Process(1, 0, 5, 2);
@@ -14,14 +14,13 @@ int main() {
     enqueue(rr, p3);
 
     struct Process *p;
-    int quantum = 2;
     while (!isEmpty(rr)) {
         p = dequeue(rr);
-        if (p->RemT <= quantum) {
+        if (p->RemT <= rr->quantum) {
             printf("Process with ID %d finished\n", p->ID);
             p->RemT = 0;
         } else {
-            p->RemT -= quantum;
+            p->RemT -= rr->quantum;
             printf("Process with ID %d processed for quantum, Remaining Time = %d\n", p->ID, p->RemT);
             enqueue(rr, p);
         }
