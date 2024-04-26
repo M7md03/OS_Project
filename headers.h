@@ -58,6 +58,7 @@ void FreeMin(struct MinHeap *minHeap) {
 }
 
 struct Process {
+    pid_t pid;
     int ID;
     int ArrivalT;  // Arrival Time
     int StartT;    // Start Time
