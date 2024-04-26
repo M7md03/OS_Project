@@ -1,3 +1,5 @@
+#ifndef HPF_H
+#define HPF_H
 #include "headers.h"
 
 struct MinHeap {
@@ -110,3 +112,4 @@ void FreeMin(struct MinHeap* minHeap) {
     free(minHeap->array);
     free(minHeap);
 }
+#endif

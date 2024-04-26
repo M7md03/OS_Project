@@ -1,3 +1,5 @@
+#ifndef RR_H
+#define RR_H
 #include "headers.h"
 
 struct RoundRobin {
@@ -48,3 +50,4 @@ void FreeRoundRobin(struct RoundRobin *rr) {
     free(rr->queue);
     free(rr);
 }
+#endif

@@ -1,3 +1,6 @@
+#ifndef HEADERS_H
+#define HEADERS_H
+
 #include <signal.h>
 #include <stdio.h>  //if you don't use scanf/printf change this include
 #include <stdlib.h>
@@ -97,3 +100,5 @@ void destroyClk(bool terminateAll) {
         killpg(getpgrp(), SIGINT);
     }
 }
+
+#endif
