@@ -3,10 +3,10 @@
 #include "headers.h"
 
 /**
- * Fixes the min heap property of an element at a specific index.
+ * Performs the min-heapify operation on a given MinHeap at a specified index.
  *
- * @param minHeap a pointer to the min heap
- * @param i the index of the element to fix
+ * @param minHeap The MinHeap structure to perform the min-heapify operation on.
+ * @param i The index of the element to start the min-heapify operation from.
  */
 void minHeapifyHPF(struct MinHeap* minHeap, int i) {
     int smallest = i;

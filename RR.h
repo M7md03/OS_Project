@@ -46,7 +46,7 @@ struct RoundRobin *RoundRobin(int q) {
  * @param rr The RoundRobin instance
  * @return 1 if the RoundRobin instance is empty, 0 otherwise
  */
-int isEmpty(struct RoundRobin *rr) { return rr->front == -1; }
+bool isEmpty(struct RoundRobin *rr) { return rr->front == -1; }
 
 /**
  * @brief Enqueues a process into the RoundRobin instance.
@@ -54,7 +54,7 @@ int isEmpty(struct RoundRobin *rr) { return rr->front == -1; }
  * @param p The process to enqueue
  * @return 1 if the process is successfully enqueued, 0 otherwise
  */
-int enqueue(struct RoundRobin *rr, struct Process *p) {
+bool enqueue(struct RoundRobin *rr, struct Process *p) {
     if ((rr->rear + 1) % rr->capacity == rr->front) {
         // Queue is full, resize
         rr->capacity *= 2;

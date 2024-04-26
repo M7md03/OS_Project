@@ -1,8 +1,11 @@
-
+#include "HPF.h"
 #include "RR.h"
+#include "SRTN.h"
 
 int main() {
     struct RoundRobin *rr = RoundRobin(2);
+    struct STRN *srt = SRTN();
+    struct HPF *hpf = HPF();
 
     struct Process *p1 = Process(1, 0, 5, 2);
     struct Process *p2 = Process(2, 2, 3, 1);
@@ -11,6 +14,14 @@ int main() {
     enqueue(rr, p1);
     enqueue(rr, p2);
     enqueue(rr, p3);
+
+    insertProcessSTRN(srt, p1);
+    insertProcessSTRN(srt, p2);
+    insertProcessSTRN(srt, p3);
+
+    insertProcessHPF(hpf, p1);
+    insertProcessHPF(hpf, p2);
+    insertProcessHPF(hpf, p3);
 
     struct Process *p;
     while (!isEmpty(rr)) {
@@ -26,6 +37,8 @@ int main() {
     }
 
     FreeRoundRobin(rr);
+    FreeSTRN(srt);
+    FreeHPF(hpf);
 
     return 0;
 }
