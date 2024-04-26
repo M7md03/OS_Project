@@ -4,7 +4,6 @@
 int main() {
     struct RoundRobin *rr = RoundRobin(2);
 
-    // Example usage:
     struct Process *p1 = Process(1, 0, 5, 2);
     struct Process *p2 = Process(2, 2, 3, 1);
     struct Process *p3 = Process(3, 4, 4, 3);
