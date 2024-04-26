@@ -20,6 +20,43 @@ typedef short bool;
 
 #define SHKEY 300
 
+struct MinHeap {
+    struct Process **array;  // Array of pointers to Process structs
+    int size;
+    int capacity;
+};
+
+/**
+ * Creates a new min heap data structure.
+ *
+ * @return a pointer to the newly created min heap, or NULL if memory allocation fails
+ */
+struct MinHeap *MinHeap() {
+    struct MinHeap *minHeap = (struct MinHeap *)malloc(sizeof(struct MinHeap));  // Dynamically allocate a min heap
+    minHeap->capacity = 2;                                                       // Initial capacity
+    minHeap->size = 0;
+    minHeap->array = (struct Process **)malloc(
+        minHeap->capacity * sizeof(struct Process *));  // Dynamically allocate memory for the array of pointers
+    return minHeap;
+}
+
+/**
+ * Swaps two elements in an array.
+ *
+ * @param a a pointer to the first element
+ * @param b a pointer to the second element
+ */
+void swap(struct Process **a, struct Process **b) {
+    struct Process *temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+void FreeMin(struct MinHeap *minHeap) {
+    free(minHeap->array);
+    free(minHeap);
+}
+
 struct Process {
     int ID;
     int ArrivalT;  // Arrival Time

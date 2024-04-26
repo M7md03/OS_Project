@@ -2,45 +2,13 @@
 #define HPF_H
 #include "headers.h"
 
-struct MinHeap {
-    struct Process** array;  // Array of pointers to Process structs
-    int size;
-    int capacity;
-};
-
-/**
- * Creates a new min heap data structure.
- *
- * @return a pointer to the newly created min heap, or NULL if memory allocation fails
- */
-struct MinHeap* MinHeap() {
-    struct MinHeap* minHeap = (struct MinHeap*)malloc(sizeof(struct MinHeap));  // Dynamically allocate a min heap
-    minHeap->capacity = 2;                                                      // Initial capacity
-    minHeap->size = 0;
-    minHeap->array = (struct Process**)malloc(
-        minHeap->capacity * sizeof(struct Process*));  // Dynamically allocate memory for the array of pointers
-    return minHeap;
-}
-
-/**
- * Swaps two elements in an array.
- *
- * @param a a pointer to the first element
- * @param b a pointer to the second element
- */
-void swap(struct Process** a, struct Process** b) {
-    struct Process* temp = *a;
-    *a = *b;
-    *b = temp;
-}
-
 /**
  * Fixes the min heap property of an element at a specific index.
  *
  * @param minHeap a pointer to the min heap
  * @param i the index of the element to fix
  */
-void minHeapify(struct MinHeap* minHeap, int i) {
+void minHeapifyHPF(struct MinHeap* minHeap, int i) {
     int smallest = i;
     int left = 2 * i + 1;
     int right = 2 * i + 2;
@@ -57,7 +25,7 @@ void minHeapify(struct MinHeap* minHeap, int i) {
 
     if (smallest != i) {
         swap(&minHeap->array[i], &minHeap->array[smallest]);
-        minHeapify(minHeap, smallest);
+        minHeapifyHPF(minHeap, smallest);
     }
 }
 
@@ -67,7 +35,7 @@ void minHeapify(struct MinHeap* minHeap, int i) {
  * @param minHeap a pointer to the min heap
  * @param p a pointer to the process to insert
  */
-void insertProcess(struct MinHeap* minHeap, struct Process* p) {
+void insertProcessHPF(struct MinHeap* minHeap, struct Process* p) {
     if (minHeap->size == minHeap->capacity) {
         minHeap->capacity *= 2;  // Double the capacity
         minHeap->array = (struct Process**)realloc(
@@ -92,7 +60,7 @@ void insertProcess(struct MinHeap* minHeap, struct Process* p) {
  * @param minHeap a pointer to the min heap
  * @return a pointer to the minimum process, or NULL if the min heap is empty
  */
-struct Process* extractMin(struct MinHeap* minHeap) {
+struct Process* extractMinHPF(struct MinHeap* minHeap) {
     if (minHeap->size == 0) return NULL;
     if (minHeap->size == 1) {
         minHeap->size--;
@@ -103,13 +71,8 @@ struct Process* extractMin(struct MinHeap* minHeap) {
     struct Process* root = minHeap->array[0];
     minHeap->array[0] = minHeap->array[minHeap->size - 1];
     minHeap->size--;
-    minHeapify(minHeap, 0);
+    minHeapifyHPF(minHeap, 0);
 
     return root;
-}
-
-void FreeMin(struct MinHeap* minHeap) {
-    free(minHeap->array);
-    free(minHeap);
 }
 #endif
