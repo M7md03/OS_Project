@@ -18,7 +18,16 @@ typedef short bool;
 #define true 1
 #define false 0
 
+#define HPF 0
+#define SRTN 1
+#define RR 2
+
 #define SHKEY 300
+
+struct msgbuff {
+    struct Process **p;
+    int size;
+};
 
 struct MinHeap {
     struct Process **array;  // Array of pointers to Process structs
@@ -58,7 +67,7 @@ void FreeMin(struct MinHeap *minHeap) {
 }
 
 struct Process {
-    pid_t pid;
+    pid_t pid;  // Process ID
     int ID;
     int ArrivalT;  // Arrival Time
     int StartT;    // Start Time
@@ -89,8 +98,10 @@ struct Process *Process(int id, int at, int rt, int pr) {
         printf("Memory allocation failed.\n");
         exit(1);
     }
+    p->pid = -20;      // Initalize PID
     p->ID = id;        // Set ID
     p->ArrivalT = at;  // Set Arrival Time
+    p->StartT = -1;    // Set Start Time
     p->RunT = rt;      // Set Running Time
     p->RemT = rt;      // Set Remaining Time
     p->P = pr;         // Set Prioroty

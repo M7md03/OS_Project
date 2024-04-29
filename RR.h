@@ -18,6 +18,8 @@ struct RoundRobin {
     int rear;               /**< The rear index of the queue */
     int capacity;           /**< The capacity of the queue */
     int quantum;            /**< The time quantum for each process */
+    struct Process *RUN;    /**< The process that is currently running */
+    int runQuantum;         /**< The remaining quantum for the running process */
 };
 
 /**
@@ -25,7 +27,7 @@ struct RoundRobin {
  * @param q The time quantum for each process
  * @return A pointer to the newly created RoundRobin instance, or NULL if memory allocation fails
  */
-struct RoundRobin *RoundRobin(int q) {
+struct RoundRobin *createRoundRobin(int q) {
     struct RoundRobin *rr = (struct RoundRobin *)malloc(sizeof(struct RoundRobin));
     if (rr == NULL) {
         return NULL;
@@ -38,6 +40,7 @@ struct RoundRobin *RoundRobin(int q) {
     }
     rr->front = rr->rear = -1;
     rr->quantum = q;
+    rr->runQuantum = q;
     return rr;
 }
 
@@ -101,4 +104,56 @@ void FreeRoundRobin(struct RoundRobin *rr) {
     free(rr);
 }
 
+void RoundRobinScheduling(int q) {
+    struct RoundRobin *rr = createRoundRobin(q);
+    key_t key_id;
+    int msgq_id;
+    key_id = ftok("keyfile", 65);
+    msgq_id = msgget(key_id, 0666 | IPC_CREAT);
+    int rec_val;
+    if (msgq_id == -1) {
+        perror("Error in create");
+        exit(-1);
+    }
+    struct msgbuff message;
+    while (true) {
+        int clk = getClk();
+        rec_val = msgrcv(msgq_id, &message, sizeof(message), 0, !IPC_NOWAIT);
+        if (rec_val == -1) {
+            perror("Error in receive");
+            break;
+        } else {
+            if (message.size == 0) {
+                break;
+            }
+            for (int i = 0; i < message.size; i++) {
+                pid_t pid = fork();
+                if (pid == -1) {
+                    perror("Error in fork");
+                    exit(-1);
+                } else if (pid == 0) {
+                    // Child process
+                    char quantum_str[10];
+                    sprintf(quantum_str, "%d", rr->quantum);
+                    char *args[] = {"./process.out", quantum_str, NULL};
+                    execv(args[0], args);
+                    perror("Error in execv");
+                    exit(-1);
+                }
+                message.p[i]->pid = pid;
+                kill(pid, SIGSTOP);
+                enqueue(rr, message.p[i]);
+            }
+            break;
+        }
+        if (!isEmpty(rr)) {
+            rr->RUN = dequeue(rr);
+            if (rr->RUN->StartT == -1) {
+                rr->RUN->StartT = clk;
+            }
+        }
+        while (clk == getClk()) {
+        }
+    }
+}
 #endif

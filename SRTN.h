@@ -8,24 +8,24 @@
  * @param minHeap a pointer to the min heap
  * @param i the index of the element to fix
  */
-void minHeapifySTRN(struct MinHeap* minHeap, int i) {
+void minHeapifySRTN(struct MinHeap* minHeap, int i) {
     int smallest = i;
     int left = 2 * i + 1;
     int right = 2 * i + 2;
 
     if (left < minHeap->size && (minHeap->array[left]->RemT < minHeap->array[smallest]->RemT ||
                                  (minHeap->array[left]->RemT == minHeap->array[smallest]->RemT &&
-                                  minHeap->array[left]->ArrivalT < minHeap->array[smallest]->ArrivalT)))
+                                  minHeap->array[left]->ArrivalT < minHeap->array[smallest]->ArrivalT))) {
         smallest = left;
-
+    }
     if (right < minHeap->size && (minHeap->array[right]->RemT < minHeap->array[smallest]->RemT ||
                                   (minHeap->array[right]->RemT == minHeap->array[smallest]->RemT &&
-                                   minHeap->array[right]->ArrivalT < minHeap->array[smallest]->ArrivalT)))
+                                   minHeap->array[right]->ArrivalT < minHeap->array[smallest]->ArrivalT))) {
         smallest = right;
-
+    }
     if (smallest != i) {
         swap(&minHeap->array[i], &minHeap->array[smallest]);
-        minHeapifySTRN(minHeap, smallest);
+        minHeapifySRTN(minHeap, smallest);
     }
 }
 
@@ -35,7 +35,7 @@ void minHeapifySTRN(struct MinHeap* minHeap, int i) {
  * @param minHeap a pointer to the min heap
  * @param p a pointer to the process to insert
  */
-void insertProcessSTRN(struct MinHeap* minHeap, struct Process* p) {
+void insertProcessSRTN(struct MinHeap* minHeap, struct Process* p) {
     if (minHeap->size == minHeap->capacity) {
         minHeap->capacity *= 2;  // Double the capacity
         minHeap->array = (struct Process**)realloc(
@@ -60,7 +60,7 @@ void insertProcessSTRN(struct MinHeap* minHeap, struct Process* p) {
  * @param minHeap a pointer to the min heap
  * @return a pointer to the minimum process, or NULL if the min heap is empty
  */
-struct Process* extractMinSTRN(struct MinHeap* minHeap) {
+struct Process* extractMinSRTN(struct MinHeap* minHeap) {
     if (minHeap->size == 0) return NULL;
     if (minHeap->size == 1) {
         minHeap->size--;
