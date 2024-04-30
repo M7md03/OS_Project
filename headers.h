@@ -27,10 +27,6 @@ typedef short bool;
 
 #define SHKEY 300
 
-struct msgbuff {
-    struct Process p;
-};
-
 struct msgRemaining {
     long mtype;
     int remainingtime;
@@ -118,6 +114,10 @@ struct Process *Process(int id, int at, int rt, int pr) {
 void DeProcess(struct Process *p) {
     free(p);  // Free Memory
 }
+
+struct msgbuff {
+    struct Process p;
+};
 
 ///==============================
 // don't mess with this variable//

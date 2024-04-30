@@ -31,7 +31,7 @@ int main(void) {
 
     while (fscanf(fptr, "%d\t%d\t%d\t%d", &Id, &At, &Rt, &Pr) == 4)  // read the numbers in ther correct formatting
     {
-        Processes[NumberOfProcesses] = CreateProcess(Id, At, Rt, Pr);  // create a process using the values
+        Processes[NumberOfProcesses] = Process(Id, At, Rt, Pr);  // create a process using the values
         NumberOfProcesses++;
     }
     printf("the number of processses is %d \n", NumberOfProcesses);
@@ -91,7 +91,7 @@ int main(void) {
         {
             printf("The current time is %d\n", x);
             Msg_Snd.p = *(Processes[Count]);  // set the process in message buffer
-            send_val = msgsnd(msgq_id, &Msg_Snd, sizeof(Msg_Snd.p), !IPC_NOWAIT);
+            send_val = msgsnd(msgq_id, &Msg_Snd, sizeof(Msg_Snd.p), IPC_NOWAIT);
             if (send_val == -1)  // check send was sucessful
             {
                 perror("Error in send");

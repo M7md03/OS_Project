@@ -14,6 +14,8 @@ int main(int agrc, char* argv[]) {
     struct msgRemaining msg;
     msg.mtype = pid;
 
+    printf("Process %d started with remaining time = %d\n", pid, remainingtime);
+
     while (remainingtime > 0) {
         int clk = getClk();
 

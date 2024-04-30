@@ -41,6 +41,7 @@ struct RoundRobin *createRoundRobin(int q) {
     rr->front = rr->rear = -1;
     rr->quantum = q;
     rr->runQuantum = q;
+    rr->RUN = NULL;
     return rr;
 }
 
@@ -142,7 +143,6 @@ void RoundRobinScheduling(int q, int ProcNum) {
     // Define the remaining time message struct
     struct msgRemaining msg;
     int g = 0;
-    int flag = 0;
     // Start the scheduling loop
     while (true) {
         // Get the current clock time
@@ -152,14 +152,14 @@ void RoundRobinScheduling(int q, int ProcNum) {
         if (ProcNum > 0) {
             // Receive messages from the message queue
             rec_val = msgrcv(msgq_id, &messagegen, sizeof(messagegen.p), 0, IPC_NOWAIT);
-            Proc[g] = messagegen.p;
             // Check for receive errors
-            if (rec_val == -1) {
-                perror("Error in receive");
-            } else {
+            if (rec_val != -1) {
                 // Fork a child process
                 pid_t pid = fork();
-
+                Proc[g].pid = pid;
+                Proc[g] = messagegen.p;
+                printf("#%d  Process %d Recieved, ArivT: %d, RunT: %d, P: %d\n", clk, Proc[g].ID, Proc[g].ArrivalT,
+                       Proc[g].RunT, Proc[g].P);
                 // Check for fork errors
                 if (pid == -1) {
                     perror("Error in fork");
@@ -176,7 +176,6 @@ void RoundRobinScheduling(int q, int ProcNum) {
                 }
 
                 // Update the process ID and enqueue it
-                Proc[g].pid = pid;
                 kill(pid, SIGSTOP);
                 enqueue(rr, &Proc[g]);
                 g++;
@@ -185,7 +184,7 @@ void RoundRobinScheduling(int q, int ProcNum) {
         }
 
         // Check if the Round Robin queue is not empty
-        if (!isEmpty(rr)) {
+        if (!isEmpty(rr) && rr->RUN == NULL) {
             // Dequeue a process and set it to the RUN state
             rr->RUN = dequeue(rr);
             printf("Proccess %d is in RUN\n", rr->RUN->ID);
@@ -194,29 +193,29 @@ void RoundRobinScheduling(int q, int ProcNum) {
             if (rr->RUN->StartT == -1) {
                 rr->RUN->StartT = clk;
             }
-
-            // Resume the process execution and receive the remaining time
+        }
+        // Resume the process execution and receive the remaining time
+        if (rr->RUN != NULL) {
             kill(rr->RUN->pid, SIGCONT);
             msgrcv(msgid, &msg, sizeof(msg), 0, !IPC_NOWAIT);
             rr->RUN->RemT = msg.remainingtime;
             rr->runQuantum--;
-        }
-
-        // Check if the time quantum is exhausted or the process is finished
-        if (rr->runQuantum == 0 || rr->RUN->RemT == 0) {
-            if (rr->RUN->RemT > 0) {
-                // Time quantum is exhausted, pause the process and enqueue it
-                rr->runQuantum = rr->quantum;
-                kill(rr->RUN->pid, SIGSTOP);
-                enqueue(rr, rr->RUN);
-                rr->RUN = NULL;
-            } else {
-                // Process is finished, pause the process, update end time, and free memory
-                rr->runQuantum = rr->quantum;
-                kill(rr->RUN->pid, SIGSTOP);
-                rr->RUN->EndT = clk;
-                printf("Process %d Ended\n", rr->RUN->ID);
-                rr->RUN = NULL;
+            // Check if the time quantum is exhausted or the process is finished
+            if (rr->runQuantum == 0 || rr->RUN->RemT == 0) {
+                if (rr->RUN->RemT > 0) {
+                    // Time quantum is exhausted, pause the process and enqueue it
+                    rr->runQuantum = rr->quantum;
+                    kill(rr->RUN->pid, SIGSTOP);
+                    enqueue(rr, rr->RUN);
+                    rr->RUN = NULL;
+                } else {
+                    // Process is finished, pause the process, update end time, and free memory
+                    rr->runQuantum = rr->quantum;
+                    kill(rr->RUN->pid, SIGSTOP);
+                    rr->RUN->EndT = clk;
+                    printf("Process %d Ended\n", rr->RUN->ID);
+                    rr->RUN = NULL;
+                }
             }
         }
         if (ProcNum == 0 && isEmpty(rr) && rr->RUN == NULL) {
