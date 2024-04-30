@@ -26,7 +26,6 @@ typedef short bool;
 
 struct msgbuff {
     struct Process p;
-    int flag;
 };
 
 struct msgRemaining {

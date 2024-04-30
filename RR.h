@@ -151,40 +151,36 @@ void RoundRobinScheduling(int q, int ProcNum) {
         // Check if there are processes to be scheduled
         if (ProcNum > 0) {
             // Receive messages from the message queue
-            rec_val = msgrcv(msgq_id, &messagegen, sizeof(messagegen.p), 0, !IPC_NOWAIT);
+            rec_val = msgrcv(msgq_id, &messagegen, sizeof(messagegen.p), 0, IPC_NOWAIT);
             Proc[g] = messagegen.p;
-            flag = messagegen.flag;
-            if (flag == 0) {
-                // Check for receive errors
-                if (rec_val == -1) {
-                    perror("Error in receive");
-                    break;
-                } else {
-                    // Fork a child process
-                    pid_t pid = fork();
+            // Check for receive errors
+            if (rec_val == -1) {
+                perror("Error in receive");
+            } else {
+                // Fork a child process
+                pid_t pid = fork();
 
-                    // Check for fork errors
-                    if (pid == -1) {
-                        perror("Error in fork");
-                        exit(-1);
-                    } else if (pid == 0) {
-                        // Child process
-                        char run_str[10], pid_str[10];
-                        sprintf(run_str, "%d", Proc[g].RunT);
-                        sprintf(pid_str, "%d", Proc[g].pid);
-                        char *args[] = {"./process.out", run_str, pid_str, NULL};
-                        execv(args[0], args);
-                        perror("Error in execv");
-                        exit(-1);
-                    }
-
-                    // Update the process ID and enqueue it
-                    Proc[g].pid = pid;
-                    kill(pid, SIGSTOP);
-                    enqueue(rr, &Proc[g]);
-                    g++;
-                    ProcNum--;
+                // Check for fork errors
+                if (pid == -1) {
+                    perror("Error in fork");
+                    exit(-1);
+                } else if (pid == 0) {
+                    // Child process
+                    char run_str[10], pid_str[10];
+                    sprintf(run_str, "%d", Proc[g].RunT);
+                    sprintf(pid_str, "%d", Proc[g].pid);
+                    char *args[] = {"./process.out", run_str, pid_str, NULL};
+                    execv(args[0], args);
+                    perror("Error in execv");
+                    exit(-1);
                 }
+
+                // Update the process ID and enqueue it
+                Proc[g].pid = pid;
+                kill(pid, SIGSTOP);
+                enqueue(rr, &Proc[g]);
+                g++;
+                ProcNum--;
             }
         }
 
