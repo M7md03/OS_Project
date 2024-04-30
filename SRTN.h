@@ -71,7 +71,7 @@ struct Process* extractMinSRTN(struct MinHeap* minHeap) {
     struct Process* root = minHeap->array[0];
     minHeap->array[0] = minHeap->array[minHeap->size - 1];
     minHeap->size--;
-    minHeapifySTRN(minHeap, 0);
+    minHeapifySRTN(minHeap, 0);
 
     return root;
 }

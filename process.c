@@ -1,15 +1,28 @@
 #include "headers.h"
 
-/* Modify this file as needed*/
 int remainingtime;
 
 int main(int agrc, char* argv[]) {
     initClk();
 
-    // TODO it needs to get the remaining time from somewhere
-    // remainingtime = ??;
+    key_t key = ftok("progfile", 66);           // create unique key
+    int msgid = msgget(key, 0666 | IPC_CREAT);  // create message queue and return id
+
+    remainingtime = atoi(argv[1]);
+    int pid = atoi(argv[2]);
+
+    struct msgRemaining msg;
+    msg.mtype = pid;
+
     while (remainingtime > 0) {
-        // remainingtime = ??;
+        int clk = getClk();
+
+        remainingtime--;
+        msg.remainingtime = remainingtime;
+        msgsnd(msgid, &msg, sizeof(msg), !IPC_NOWAIT);
+
+        while (clk == getClk()) {
+        }
     }
 
     destroyClk(false);

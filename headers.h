@@ -29,6 +29,11 @@ struct msgbuff {
     int size;
 };
 
+struct msgRemaining {
+    long mtype;
+    int remainingtime;
+};
+
 struct MinHeap {
     struct Process **array;  // Array of pointers to Process structs
     int size;
@@ -104,7 +109,7 @@ struct Process *Process(int id, int at, int rt, int pr) {
     p->StartT = -1;    // Set Start Time
     p->RunT = rt;      // Set Running Time
     p->RemT = rt;      // Set Remaining Time
-    p->P = pr;         // Set Prioroty
+    p->P = pr;         // Set Priority
     return p;
 }
 
