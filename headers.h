@@ -22,6 +22,9 @@ typedef short bool;
 #define SRTN 1
 #define RR 2
 
+#define MaxLengthOfLine 100
+#define No_of_Processes 50
+
 #define SHKEY 300
 
 struct msgbuff {
