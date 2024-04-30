@@ -8,17 +8,17 @@ struct Pair
     int start;
     int end;
 };
-struct InputVariables
+struct Process
 {
   int Id;
   int Arrival_Time;
   int Runtime;
   int Priority;
-  int memorysize;
+  //int memorysize;
 };
 struct Node
 {
-  struct InputVariables Input;
+  struct Process Input;       //process node
   int Start_Time;
   int Constant_Start_Time;
   int Finish_Time;
@@ -30,6 +30,6 @@ struct Node
 };
 struct msgbuff
 {
-  long m_type;
-  struct Node Process;
+  struct Process **p;
+  int size;
 };

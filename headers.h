@@ -1,3 +1,5 @@
+#ifndef HEADERS_H
+#define HEADERS_H
 #include "queue.h"
 #include <stdio.h>      //if you don't use scanf/printf change this include
 #include <sys/types.h>
@@ -17,6 +19,7 @@ typedef short bool;
 #define false 0
 #define SRTN 1
 #define RR 2
+#define HPF 0
 #define SHKEY 300
 
 
@@ -67,3 +70,10 @@ void destroyClk(bool terminateAll)
         killpg(getpgrp(), SIGINT);
     }
 }
+/*
+* the processes data struct 
+* this struct is used to keep the data from the input file which is the main values
+* each process needs to be initialized and run safely
+*/
+
+#endif 
