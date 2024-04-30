@@ -36,6 +36,5 @@ struct Process {
 // };
 struct msgbuff {
     struct Process p;
-    int flag;
 };
 #endif
