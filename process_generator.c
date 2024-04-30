@@ -4,6 +4,9 @@ int msgq_id;
 
 int main(void)
 {
+    //initializing MessageQueue
+    key_t key_id = ftok("keyfile", 65);                // CREATE A UNIQUE KEY
+    msgq_id = msgget(key_id, 0666 | IPC_CREAT); // CREATE MESSAGE QUEUE THEN RETURN THE ID
     //signal(SIGINT, clearResources);
     // TODO Initialization
     // 1. Read the input files.
@@ -11,7 +14,7 @@ int main(void)
     int ALGORITHM;
     struct msgbuff Msg_Snd ;
     int NumberOfProcesses = 0;             //index of process in the processes array 
-    struct Process *Processes [10];        //ARRAY OF PROCESSES 
+    struct Process *Processes [No_of_Processes];        //ARRAY OF PROCESSES 
     int send_val;
     char line[MaxLengthOfLine];
     FILE * fptr;                           //pointer to file
@@ -88,27 +91,31 @@ int main(void)
 
 
     // 5. Create a data structure for processes and provide it with its parameters.
-    // 6. Send the information to the scheduler at the appropriate time.
     int Count = 0, x;
     while (1)
-    {   
-        x = getClk();                               //read the clk
-
-        printf("current time is %d\n", x);
-        if(x == Processes[Count]->ArrivalT)         //if process arrival time is equal to clock time send it
+    {
+        x = getClk();
+         if(x < Processes[Count]->ArrivalT)
         {
-            Msg_Snd.p = *(Processes[Count]);
-        }         
-        send_val = msgsnd(msgq_id, &Msg_Snd, sizeof(Msg_Snd), !IPC_NOWAIT);
-        if (send_val == -1)
-        {
-            perror("Error in send");
+            continue;
         }
-        if (Count >= 10)                            //if Count reaches the end of the Processes break the loop
+        // 6. Send the information to the scheduler at the appropriate time.
+        while (x == Processes[Count]->ArrivalT)                     //check arrival time of process with the clock
+        {
+            printf("The current time is %d\n", x);
+            Msg_Snd.p = *(Processes[Count]);                        //set the process in message buffer
+            send_val = msgsnd(msgq_id, &Msg_Snd, sizeof(Msg_Snd.p), !IPC_NOWAIT);
+            if (send_val == -1)                                     //check send was sucessful
+            {
+                perror("Error in send");
+            }
+            Count++;
+            printf("I sent the message at time %d\n", x);           //print the time of sending 
+        }
+        if (Count == NumberOfProcesses)                                            
         {
             break;
         }
-        Count++;
     }
     for(int i = 0; i < NumberOfProcesses; i++)
     {
