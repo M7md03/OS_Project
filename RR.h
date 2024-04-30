@@ -112,6 +112,9 @@ void FreeRoundRobin(struct RoundRobin *rr) {
 /**
  * @brief Implements the Round Robin scheduling algorithm.
  *
+ * This function performs the Round Robin scheduling algorithm to schedule processes.
+ * It takes the time quantum and the number of processes as input parameters.
+ *
  * @param q The time quantum for each process.
  * @param ProcNum The number of processes to be scheduled.
  */
