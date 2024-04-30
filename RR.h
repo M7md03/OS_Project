@@ -116,6 +116,7 @@ void FreeRoundRobin(struct RoundRobin *rr) {
  * @param ProcNum The number of processes to be scheduled.
  */
 void RoundRobinScheduling(int q, int ProcNum) {
+    struct Process *Proc = (struct Process *)malloc(ProcNum * sizeof(struct Process));
     // Create a RoundRobin struct
     struct RoundRobin *rr = createRoundRobin(q);
 
@@ -127,7 +128,7 @@ void RoundRobinScheduling(int q, int ProcNum) {
     int rec_val;
 
     // Define the message buffer
-    struct msgbuff message;
+    struct msgbuff messagegen;
 
     // Get the key for the remaining time message queue
     key_t key = ftok("progfile", 66);
@@ -137,7 +138,8 @@ void RoundRobinScheduling(int q, int ProcNum) {
 
     // Define the remaining time message struct
     struct msgRemaining msg;
-
+    int g = 0;
+    int flag = 0;
     // Start the scheduling loop
     while (true) {
         // Get the current clock time
@@ -146,88 +148,86 @@ void RoundRobinScheduling(int q, int ProcNum) {
         // Check if there are processes to be scheduled
         if (ProcNum > 0) {
             // Receive messages from the message queue
-            rec_val = msgrcv(msgq_id, &message, sizeof(message), 0, !IPC_NOWAIT);
-
-            // Check for receive errors
-            if (rec_val == -1) {
-                perror("Error in receive");
-                break;
-            } else {
-                // Process the received messages
-                if (message.size > 0) {
-                    for (int i = 0; i < message.size; i++) {
-                        // Fork a child process
-                        pid_t pid = fork();
-
-                        // Check for fork errors
-                        if (pid == -1) {
-                            perror("Error in fork");
-                            exit(-1);
-                        } else if (pid == 0) {
-                            // Child process
-                            char run_str[10], pid_str[10];
-                            sprintf(run_str, "%d", message.p[i]->RunT);
-                            sprintf(pid_str, "%d", message.p[i]->pid);
-                            char *args[] = {"./process.out", run_str, pid_str, NULL};
-                            execv(args[0], args);
-                            perror("Error in execv");
-                            exit(-1);
-                        }
-
-                        // Update the process ID and enqueue it
-                        message.p[i]->pid = pid;
-                        kill(pid, SIGSTOP);
-                        enqueue(rr, message.p[i]);
-                        ProcNum--;
-                    }
-                }
-            }
-
-            // Check if the Round Robin queue is not empty
-            if (!isEmpty(rr)) {
-                // Dequeue a process and set it to the RUN state
-                rr->RUN = dequeue(rr);
-                printf("Proccess %d is in RUN\n", rr->RUN->ID);
-
-                // Update the start time if necessary
-                if (rr->RUN->StartT == -1) {
-                    rr->RUN->StartT = clk;
-                }
-
-                // Resume the process execution and receive the remaining time
-                kill(rr->RUN->pid, SIGCONT);
-                msgrcv(msgid, &msg, sizeof(msg), 0, !IPC_NOWAIT);
-                rr->RUN->RemT = msg.remainingtime;
-                rr->runQuantum--;
-            }
-
-            // Check if the time quantum is exhausted or the process is finished
-            if (rr->runQuantum == 0 || rr->RUN->RemT == 0) {
-                if (rr->RUN->RemT > 0) {
-                    // Time quantum is exhausted, pause the process and enqueue it
-                    rr->runQuantum = rr->quantum;
-                    kill(rr->RUN->pid, SIGSTOP);
-                    enqueue(rr, rr->RUN);
-                    rr->RUN = NULL;
+            rec_val = msgrcv(msgq_id, &messagegen, sizeof(messagegen.p), 0, !IPC_NOWAIT);
+            Proc[g] = messagegen.p;
+            flag = messagegen.flag;
+            if (flag == 0) {
+                // Check for receive errors
+                if (rec_val == -1) {
+                    perror("Error in receive");
+                    break;
                 } else {
-                    // Process is finished, pause the process, update end time, and free memory
-                    rr->runQuantum = rr->quantum;
-                    kill(rr->RUN->pid, SIGSTOP);
-                    rr->RUN->EndT = clk;
-                    printf("Process %d Ended\n", rr->RUN->ID);
-                    rr->RUN = NULL;
+                    // Fork a child process
+                    pid_t pid = fork();
+
+                    // Check for fork errors
+                    if (pid == -1) {
+                        perror("Error in fork");
+                        exit(-1);
+                    } else if (pid == 0) {
+                        // Child process
+                        char run_str[10], pid_str[10];
+                        sprintf(run_str, "%d", Proc[g].RunT);
+                        sprintf(pid_str, "%d", Proc[g].pid);
+                        char *args[] = {"./process.out", run_str, pid_str, NULL};
+                        execv(args[0], args);
+                        perror("Error in execv");
+                        exit(-1);
+                    }
+
+                    // Update the process ID and enqueue it
+                    Proc[g].pid = pid;
+                    kill(pid, SIGSTOP);
+                    enqueue(rr, &Proc[g]);
+                    g++;
+                    ProcNum--;
                 }
-            }
-            if (ProcNum == 0 && isEmpty(rr) && rr->RUN == NULL) {
-                FreeRoundRobin(rr);
-                break;
-            }
-            // Wait until the clock time changes
-            while (clk == getClk()) {
             }
         }
-    }
 
+        // Check if the Round Robin queue is not empty
+        if (!isEmpty(rr)) {
+            // Dequeue a process and set it to the RUN state
+            rr->RUN = dequeue(rr);
+            printf("Proccess %d is in RUN\n", rr->RUN->ID);
+
+            // Update the start time if necessary
+            if (rr->RUN->StartT == -1) {
+                rr->RUN->StartT = clk;
+            }
+
+            // Resume the process execution and receive the remaining time
+            kill(rr->RUN->pid, SIGCONT);
+            msgrcv(msgid, &msg, sizeof(msg), 0, !IPC_NOWAIT);
+            rr->RUN->RemT = msg.remainingtime;
+            rr->runQuantum--;
+        }
+
+        // Check if the time quantum is exhausted or the process is finished
+        if (rr->runQuantum == 0 || rr->RUN->RemT == 0) {
+            if (rr->RUN->RemT > 0) {
+                // Time quantum is exhausted, pause the process and enqueue it
+                rr->runQuantum = rr->quantum;
+                kill(rr->RUN->pid, SIGSTOP);
+                enqueue(rr, rr->RUN);
+                rr->RUN = NULL;
+            } else {
+                // Process is finished, pause the process, update end time, and free memory
+                rr->runQuantum = rr->quantum;
+                kill(rr->RUN->pid, SIGSTOP);
+                rr->RUN->EndT = clk;
+                printf("Process %d Ended\n", rr->RUN->ID);
+                rr->RUN = NULL;
+            }
+        }
+        if (ProcNum == 0 && isEmpty(rr) && rr->RUN == NULL) {
+            FreeRoundRobin(rr);
+            break;
+        }
+        // Wait until the clock time changes
+        while (clk == getClk()) {
+        }
+    }
     // Destroy the remaining time message queue
     msgctl(msgid, IPC_RMID, NULL);
 

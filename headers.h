@@ -25,8 +25,8 @@ typedef short bool;
 #define SHKEY 300
 
 struct msgbuff {
-    struct Process **p;
-    int size;
+    struct Process p;
+    int flag;
 };
 
 struct msgRemaining {
