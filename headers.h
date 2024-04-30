@@ -1,6 +1,7 @@
 #ifndef HEADERS_H
 #define HEADERS_H
 #include "queue.h"
+#include "process.h"
 #include <stdio.h>      //if you don't use scanf/printf change this include
 #include <sys/types.h>
 #include <sys/stat.h>
