@@ -1,19 +1,18 @@
 #ifndef QUEUE_H
 #define QUEUE_H
-#include <stdio.h>
 #include <limits.h>
+#include <math.h>
+#include <stdio.h>
 #include <sys/types.h>
-#include<math.h>
 #define MaxLengthOfLine 100
 #define No_of_Processes 50
 //  Priority Queue
-struct Pair
-{
+struct Pair {
     int start;
     int end;
 };
 struct Process {
-    pid_t pid;     // Process ID
+    pid_t pid;  // Process ID
     int ID;
     int ArrivalT;  // Arrival Time
     int StartT;    // Start Time
@@ -21,7 +20,7 @@ struct Process {
     int RemT;      // Remaining Time
     int EndT;      // End Time
     int P;         // Priority
-    //int MemorySize;     //for phase 2 
+    // int MemorySize;     //for phase 2
 };
 // struct Node
 // {
@@ -35,8 +34,8 @@ struct Process {
 //   int pid;
 //   struct Pair Allocation;
 // };
-struct msgbuff
-{
-  struct Process p;
+struct msgbuff {
+    struct Process p;
+    int flag;
 };
-#endif 
+#endif
