@@ -72,7 +72,6 @@ struct Process* extractMinHPF(struct MinHeap* minHeap) {
 }
 
 void HPFScheduling(int ProcNum) {
-    sem_t sem;
     key_t key_id = ftok("keyfile", 65);
 
     int msgq_id = msgget(key_id, 0666 | IPC_CREAT);
@@ -86,7 +85,6 @@ void HPFScheduling(int ProcNum) {
     struct MinHeap* minHeap = MinHeap(ProcNum);
     int g = 0;
     while (ProcNum > 0) {
-        sem_wait(&sem);
         int clk = getClk();
 
         bool flag = true;
@@ -149,7 +147,6 @@ void HPFScheduling(int ProcNum) {
                 minHeap->RUN = NULL;
             }
         }
-        sem_post(&sem);
         // Wait until the clock time changes
         while (clk == getClk()) {
         }
