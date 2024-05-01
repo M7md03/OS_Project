@@ -140,8 +140,9 @@ void RoundRobinScheduling(int q, int ProcNum) {
     while (ProcNum > 0) {
         // Get the current clock time
         int clk = getClk();
-        // printf("Current Time: %d\n", clk);
-
+        if (clk == 0) {
+            continue;
+        }
         // Check if there are processes to be scheduled
         bool flag = true;
         while (flag) {
@@ -193,7 +194,7 @@ void RoundRobinScheduling(int q, int ProcNum) {
             kill(rr->RUN->pid, SIGCONT);
             // Update the start time if necessary
             if (rr->RUN->StartT == -1) {
-                rr->RUN->StartT = getClk();
+                rr->RUN->StartT = clk;
             }
             msgrcv(msgid, &msg, sizeof(msg), 0, !IPC_NOWAIT);
             rr->RUN->RemT = msg.remainingtime;

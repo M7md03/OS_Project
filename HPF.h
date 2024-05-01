@@ -86,6 +86,9 @@ void HPFScheduling(int ProcNum) {
     int g = 0;
     while (ProcNum > 0) {
         int clk = getClk();
+        if (clk == 0) {
+            continue;
+        }
 
         bool flag = true;
         while (flag) {
@@ -132,7 +135,7 @@ void HPFScheduling(int ProcNum) {
             kill(minHeap->RUN->pid, SIGCONT);
             // Update the start time if necessary
             if (minHeap->RUN->StartT == -1) {
-                minHeap->RUN->StartT = getClk();
+                minHeap->RUN->StartT = clk;
             }
             msgrcv(msgid, &msg, sizeof(msg), 0, !IPC_NOWAIT);
             minHeap->RUN->RemT = msg.remainingtime;
