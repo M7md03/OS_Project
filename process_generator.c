@@ -44,10 +44,7 @@ int main(void) {
     for (int i = 0; i < NumberOfProcesses; i++) {
         Processes[i] = (struct Process *)malloc(sizeof(struct Process));
         fscanf(fptr, "%d\t%d\t%d\t%d", &Id, &At, &Rt, &Pr);
-        Processes[i]->ID = Id;
-        Processes[i]->ArrivalT = At;
-        Processes[i]->RunT = Rt;
-        Processes[i]->P = Pr;
+        Processes[i] = Process(Id, At, Rt, Pr);
     }
     printf("the number of processses is %d \n", NumberOfProcesses);
     fclose(fptr);

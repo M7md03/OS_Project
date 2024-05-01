@@ -9,13 +9,13 @@ int main(int agrc, char* argv[]) {
     int msgid = msgget(key, 0666 | IPC_CREAT);  // create message queue and return id
 
     remainingtime = atoi(argv[1]);
-    pid_t pid = atoi(argv[2]);
-    int id = atoi(argv[3]);
+    pid_t pid = getpid();
+    int id = atoi(argv[2]);
 
     struct msgRemaining msg;
     msg.mtype = pid;
 
-    printf("Process %d started with remaining time = %d\n", id, remainingtime);
+    printf("%d Process %d started with remaining time = %d\n", pid, id, remainingtime);
 
     while (remainingtime > 0) {
         int clk = getClk();

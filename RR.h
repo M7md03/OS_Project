@@ -144,6 +144,7 @@ void RoundRobinScheduling(int q, int ProcNum) {
     while (ProcNum > 0) {
         // Get the current clock time
         int clk = getClk();
+        printf("Current Time: %d\n", clk);
 
         // Check if there are processes to be scheduled
         bool flag = true;
@@ -152,11 +153,11 @@ void RoundRobinScheduling(int q, int ProcNum) {
             struct Process messagegen;
             rec_val = msgrcv(msgq_id, &messagegen, sizeof(messagegen), 0, IPC_NOWAIT);
             // Check for receive errors
+
             if (rec_val != -1) {
                 // Fork a child process
                 Proc[g] = messagegen;
                 pid_t pid = fork();
-                Proc[g].pid = pid;
 
                 // Check for fork errors
                 if (pid == -1) {
@@ -166,13 +167,13 @@ void RoundRobinScheduling(int q, int ProcNum) {
                     // Child process
                     char run_str[10], pid_str[10], id_str[10];
                     sprintf(run_str, "%d", Proc[g].RunT);
-                    sprintf(pid_str, "%d", getpid());
                     sprintf(id_str, "%d", Proc[g].ID);
-                    char *args[] = {"./process.out", run_str, pid_str, id_str, NULL};
+                    char *args[] = {"./process.out", run_str, id_str, NULL};
                     if (execv(args[0], args) == -1) {
                         perror("Error in execv");
                     }
                 }
+                Proc[g].pid = pid;
                 printf("#%d  Process %d Recieved, ArivT: %d, RunT: %d, P: %d, PID: %d\n", clk, Proc[g].ID,
                        Proc[g].ArrivalT, Proc[g].RunT, Proc[g].P, Proc[g].pid);
 
@@ -190,15 +191,14 @@ void RoundRobinScheduling(int q, int ProcNum) {
             // Dequeue a process and set it to the RUN state
             rr->RUN = dequeue(rr);
             printf("Proccess %d is in RUN\n", rr->RUN->ID);
-
-            // Update the start time if necessary
-            if (rr->RUN->StartT == -1) {
-                rr->RUN->StartT = clk;
-            }
         }
         // Resume the process execution and receive the remaining time
         if (rr->RUN != NULL) {
             kill(rr->RUN->pid, SIGCONT);
+            // Update the start time if necessary
+            if (rr->RUN->StartT == -1) {
+                rr->RUN->StartT = getClk();
+            }
             msgrcv(msgid, &msg, sizeof(msg), 0, !IPC_NOWAIT);
             rr->RUN->RemT = msg.remainingtime;
             rr->runQuantum--;
@@ -233,8 +233,5 @@ void RoundRobinScheduling(int q, int ProcNum) {
     }
     // Destroy the remaining time message queue
     msgctl(msgid, IPC_RMID, NULL);
-
-    // Destroy the main message queue
-    msgctl(msgq_id, IPC_RMID, NULL);
 }
 #endif
