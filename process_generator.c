@@ -94,16 +94,19 @@ int main(void) {
 
     int Count = 0;
     while (Count < NumberOfProcesses) {
-        if (getClk() == Processes[Count]->ArrivalT) {
-            printf("The current time is %d\n", getClk());
+        int clk = getClk();
+        if (clk == Processes[Count]->ArrivalT) {
+            // printf("The current time is %d\n", getClk());
             struct Process p = *(Processes[Count]);
             send_val = msgsnd(msgq_id, &p, sizeof(p), IPC_NOWAIT);
             if (send_val == -1) {
                 perror("Error in send");
             } else {
                 Count++;
-                printf("I sent the message at time %d\n", getClk());
+                printf("Process %d Sent\n", p.ID);
             }
+        }
+        while (clk == getClk()) {
         }
     }
 

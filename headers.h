@@ -35,6 +35,7 @@ struct MinHeap {
     struct Process **array;  // Array of pointers to Process structs
     int size;
     int capacity;
+    struct Process *RUN;
 };
 
 /**

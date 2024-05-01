@@ -140,7 +140,7 @@ void RoundRobinScheduling(int q, int ProcNum) {
     while (ProcNum > 0) {
         // Get the current clock time
         int clk = getClk();
-        printf("Current Time: %d\n", clk);
+        // printf("Current Time: %d\n", clk);
 
         // Check if there are processes to be scheduled
         bool flag = true;
@@ -219,14 +219,13 @@ void RoundRobinScheduling(int q, int ProcNum) {
                 }
             }
         }
-        if (ProcNum == 0 && isEmpty(rr) && rr->RUN == NULL) {
-            FreeRoundRobin(rr);
-            break;
-        }
         // Wait until the clock time changes
         while (clk == getClk()) {
         }
     }
+    // Free the allocated memory
+    FreeRoundRobin(rr);
+
     // Destroy the remaining time message queue
     msgctl(msgid, IPC_RMID, NULL);
 }

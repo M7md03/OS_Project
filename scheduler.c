@@ -1,3 +1,4 @@
+#include "HPF.h"
 #include "RR.h"
 #include "headers.h"
 
@@ -7,9 +8,10 @@ int main(int argc, char* argv[]) {
     int Quantum = atoi(argv[3]);
 
     initClk();
-    if (Alg == 0) {
-    } else if (Alg == 1) {
-    } else if (Alg == 2) {
+    if (Alg == HPF) {
+        HPFscheduling(ProcNum);
+    } else if (Alg == SRTN) {
+    } else if (Alg == RR) {
         RoundRobinScheduling(Quantum, ProcNum);
     }
     printf("Scheduler Terminated\n");
