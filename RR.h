@@ -23,16 +23,17 @@ struct RoundRobin {
 };
 
 /**
- * @brief Creates a new RoundRobin instance with the given time quantum.
+ * @brief Creates a new RoundRobin instance with the given time quantum and capacity.
  * @param q The time quantum for each process
+ * @param capacity The capacity of the queue
  * @return A pointer to the newly created RoundRobin instance, or NULL if memory allocation fails
  */
-struct RoundRobin *createRoundRobin(int q) {
+struct RoundRobin *createRoundRobin(int q, int capacity) {
     struct RoundRobin *rr = (struct RoundRobin *)malloc(sizeof(struct RoundRobin));
     if (rr == NULL) {
         return NULL;
     }
-    rr->capacity = 1;  // Initial capacity
+    rr->capacity = capacity;
     rr->queue = (struct Process **)malloc(rr->capacity * sizeof(struct Process *));
     if (rr->queue == NULL) {
         free(rr);
@@ -60,13 +61,8 @@ bool isEmpty(struct RoundRobin *rr) { return rr->front == -1; }
  */
 bool enqueue(struct RoundRobin *rr, struct Process *p) {
     if ((rr->rear + 1) % rr->capacity == rr->front) {
-        // Queue is full, resize
-        rr->capacity *= 2;
-        struct Process **newQueue = (struct Process **)realloc(rr->queue, rr->capacity * sizeof(struct Process *));
-        if (newQueue == NULL) {
-            return 0;
-        }
-        rr->queue = newQueue;
+        // Queue is full
+        return 0;
     }
     if (isEmpty(rr)) {
         rr->front = rr->rear = 0;
@@ -122,7 +118,7 @@ void FreeRoundRobin(struct RoundRobin *rr) {
 void RoundRobinScheduling(int q, int ProcNum) {
     struct Process *Proc = (struct Process *)malloc(ProcNum * sizeof(struct Process));
     // Create a RoundRobin struct
-    struct RoundRobin *rr = createRoundRobin(q);
+    struct RoundRobin *rr = createRoundRobin(q, ProcNum);
 
     // Get the key for the message queue
     key_t key_id = ftok("keyfile", 65);

@@ -36,11 +36,6 @@ void minHeapifyHPF(struct MinHeap* minHeap, int i) {
  * @param p a pointer to the process to insert
  */
 void insertProcessHPF(struct MinHeap* minHeap, struct Process* p) {
-    if (minHeap->size == minHeap->capacity) {
-        minHeap->capacity *= 2;  // Double the capacity
-        minHeap->array = (struct Process**)realloc(
-            minHeap->array, minHeap->capacity * sizeof(struct Process*));  // Resize the array of pointers
-    }
     int i = minHeap->size;
     minHeap->size++;
     minHeap->array[i] = p;

@@ -42,9 +42,9 @@ struct MinHeap {
  *
  * @return a pointer to the newly created min heap, or NULL if memory allocation fails
  */
-struct MinHeap *MinHeap() {
+struct MinHeap *MinHeap(int c) {
     struct MinHeap *minHeap = (struct MinHeap *)malloc(sizeof(struct MinHeap));  // Dynamically allocate a min heap
-    minHeap->capacity = 2;                                                       // Initial capacity
+    minHeap->capacity = c;                                                       // Initial capacity
     minHeap->size = 0;
     minHeap->array = (struct Process **)malloc(
         minHeap->capacity * sizeof(struct Process *));  // Dynamically allocate memory for the array of pointers
