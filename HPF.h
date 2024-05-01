@@ -75,4 +75,5 @@ struct Process* extractMinHPF(struct MinHeap* minHeap) {
 
     return root;
 }
+
 #endif

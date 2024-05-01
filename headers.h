@@ -50,6 +50,7 @@ struct MinHeap *MinHeap() {
         minHeap->capacity * sizeof(struct Process *));  // Dynamically allocate memory for the array of pointers
     return minHeap;
 }
+bool isEmptyMin(struct MinHeap *minHeap) { return minHeap->size == 0; }
 
 /**
  * Swaps two elements in an array.

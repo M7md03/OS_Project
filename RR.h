@@ -144,7 +144,6 @@ void RoundRobinScheduling(int q, int ProcNum) {
     while (ProcNum > 0) {
         // Get the current clock time
         int clk = getClk();
-        printf("clk = %d\n", clk);
 
         // Check if there are processes to be scheduled
         bool flag = true;
@@ -208,15 +207,18 @@ void RoundRobinScheduling(int q, int ProcNum) {
                 if (rr->RUN->RemT > 0) {
                     // Time quantum is exhausted, pause the process and enqueue it
                     rr->runQuantum = rr->quantum;
-                    kill(rr->RUN->pid, SIGSTOP);
-                    enqueue(rr, rr->RUN);
-                    rr->RUN = NULL;
+                    if (!isEmpty(rr)) {
+                        kill(rr->RUN->pid, SIGSTOP);
+                        enqueue(rr, rr->RUN);
+                        rr->RUN = NULL;
+                    }
                 } else {
                     // Process is finished, pause the process, update end time, and free memory
                     rr->runQuantum = rr->quantum;
                     wait(NULL);
                     rr->RUN->EndT = clk;
                     ProcNum--;
+                    printf("Proccess %d is Finished, StartT = %d\n", rr->RUN->ID, rr->RUN->StartT);
                     rr->RUN = NULL;
                 }
             }

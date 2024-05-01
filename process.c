@@ -15,7 +15,7 @@ int main(int agrc, char* argv[]) {
     struct msgRemaining msg;
     msg.mtype = pid;
 
-    printf("Process %d started with remaining time = %d\n", pid, remainingtime);
+    printf("Process %d started with remaining time = %d\n", id, remainingtime);
 
     while (remainingtime > 0) {
         int clk = getClk();
@@ -24,13 +24,12 @@ int main(int agrc, char* argv[]) {
         msg.remainingtime = remainingtime;
         printf("Process %d: Remaining time = %d\n", id, remainingtime);
         msgsnd(msgid, &msg, sizeof(msg), !IPC_NOWAIT);
-
+        if (remainingtime == 0) {
+            printf("Procces %d Terminated at clk = %d\n", id, getClk());
+            destroyClk(false);
+            return 0;
+        }
         while (clk == getClk()) {
         }
     }
-    printf("Procces %d Terminated\n", pid);
-
-    destroyClk(false);
-
-    return 0;
 }
