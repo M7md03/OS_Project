@@ -131,9 +131,6 @@ void RoundRobinScheduling(int q, int ProcNum) {
     int msgq_id = msgget(key_id, 0666 | IPC_CREAT);
     int rec_val;
 
-    // Define the message buffer
-    struct msgbuff messagegen;
-
     // Get the key for the remaining time message queue
     key_t key = ftok("progfile", 66);
 
@@ -144,42 +141,48 @@ void RoundRobinScheduling(int q, int ProcNum) {
     struct msgRemaining msg;
     int g = 0;
     // Start the scheduling loop
-    while (true) {
+    while (ProcNum > 0) {
         // Get the current clock time
         int clk = getClk();
+        printf("clk = %d\n", clk);
 
         // Check if there are processes to be scheduled
-        if (ProcNum > 0) {
+        bool flag = true;
+        while (flag) {
             // Receive messages from the message queue
-            rec_val = msgrcv(msgq_id, &messagegen, sizeof(messagegen.p), 0, IPC_NOWAIT);
+            struct Process messagegen;
+            rec_val = msgrcv(msgq_id, &messagegen, sizeof(messagegen), 0, IPC_NOWAIT);
             // Check for receive errors
             if (rec_val != -1) {
                 // Fork a child process
+                Proc[g] = messagegen;
                 pid_t pid = fork();
                 Proc[g].pid = pid;
-                Proc[g] = messagegen.p;
-                printf("#%d  Process %d Recieved, ArivT: %d, RunT: %d, P: %d\n", clk, Proc[g].ID, Proc[g].ArrivalT,
-                       Proc[g].RunT, Proc[g].P);
+
                 // Check for fork errors
                 if (pid == -1) {
                     perror("Error in fork");
                     exit(-1);
                 } else if (pid == 0) {
                     // Child process
-                    char run_str[10], pid_str[10];
+                    char run_str[10], pid_str[10], id_str[10];
                     sprintf(run_str, "%d", Proc[g].RunT);
-                    sprintf(pid_str, "%d", Proc[g].pid);
-                    char *args[] = {"./process.out", run_str, pid_str, NULL};
-                    execv(args[0], args);
-                    perror("Error in execv");
-                    exit(-1);
+                    sprintf(pid_str, "%d", getpid());
+                    sprintf(id_str, "%d", Proc[g].ID);
+                    char *args[] = {"./process.out", run_str, pid_str, id_str, NULL};
+                    if (execv(args[0], args) == -1) {
+                        perror("Error in execv");
+                    }
                 }
+                printf("#%d  Process %d Recieved, ArivT: %d, RunT: %d, P: %d, PID: %d\n", clk, Proc[g].ID,
+                       Proc[g].ArrivalT, Proc[g].RunT, Proc[g].P, Proc[g].pid);
 
                 // Update the process ID and enqueue it
                 kill(pid, SIGSTOP);
                 enqueue(rr, &Proc[g]);
                 g++;
-                ProcNum--;
+            } else {
+                flag = false;
             }
         }
 
@@ -211,9 +214,9 @@ void RoundRobinScheduling(int q, int ProcNum) {
                 } else {
                     // Process is finished, pause the process, update end time, and free memory
                     rr->runQuantum = rr->quantum;
-                    kill(rr->RUN->pid, SIGSTOP);
+                    wait(NULL);
                     rr->RUN->EndT = clk;
-                    printf("Process %d Ended\n", rr->RUN->ID);
+                    ProcNum--;
                     rr->RUN = NULL;
                 }
             }

@@ -1,24 +1,22 @@
 #include "headers.h"
 void clearResources(int);
+int getNoOfProcesses(FILE *);
+void skipLine(FILE *);
 int msgq_id;
 
 int main(void) {
-    // initializing MessageQueue
-    key_t key_id = ftok("keyfile", 65);          // CREATE A UNIQUE KEY
-    msgq_id = msgget(key_id, 0666 | IPC_CREAT);  // CREATE MESSAGE QUEUE THEN RETURN THE ID
-    // signal(SIGINT, clearResources);
-    //  TODO Initialization
-    //  1. Read the input files.
+    signal(SIGINT, clearResources);
+
+    key_t key_id = ftok("keyfile", 65);
+    msgq_id = msgget(key_id, 0666 | IPC_CREAT);
+
     int QUANTA = 0;
     int ALGORITHM;
-    struct msgbuff Msg_Snd;
-    int NumberOfProcesses = 0;                   // index of process in the processes array
-    struct Process *Processes[No_of_Processes];  // ARRAY OF PROCESSES
-    int send_val;
-    char line[MaxLengthOfLine];
-    FILE *fptr;  // pointer to file
 
-    fptr = fopen("processes.txt", "r");  // opening the file to be read "r" is the mode used for reading
+    int NumberOfProcesses = 0;
+    struct Process **Processes;
+    int send_val;
+    FILE *fptr = fopen("processes.txt", "r");
 
     if (fptr == NULL)  // check if the file opened sucessfully or not
     {
@@ -26,13 +24,19 @@ int main(void) {
         return -1;
     }
 
-    fgets(line, sizeof(line), fptr);  // read the first line which is a comment
-    int Id, At, Rt, Pr;               // place holders for the process details
+    skipLine(fptr);
+    NumberOfProcesses = getNoOfProcesses(fptr);
+    Processes = (struct Process **)malloc(NumberOfProcesses * sizeof(struct Process *));
+    skipLine(fptr);
 
-    while (fscanf(fptr, "%d\t%d\t%d\t%d", &Id, &At, &Rt, &Pr) == 4)  // read the numbers in ther correct formatting
-    {
-        Processes[NumberOfProcesses] = Process(Id, At, Rt, Pr);  // create a process using the values
-        NumberOfProcesses++;
+    int Id, At, Rt, Pr;
+    for (int i = 0; i < NumberOfProcesses; i++) {
+        Processes[i] = (struct Process *)malloc(sizeof(struct Process));
+        fscanf(fptr, "%d\t%d\t%d\t%d", &Id, &At, &Rt, &Pr);
+        Processes[i]->ID = Id;
+        Processes[i]->ArrivalT = At;
+        Processes[i]->RunT = Rt;
+        Processes[i]->P = Pr;
     }
     printf("the number of processses is %d \n", NumberOfProcesses);
     fclose(fptr);  // close the file after reading
@@ -77,30 +81,24 @@ int main(void) {
     }
     // 4. Use this function after creating the clock process to initialize clock
     initClk();
+
+    printf("The clock has been initialized\n");
     // TODO Generation Main Loop
 
     // 5. Create a data structure for processes and provide it with its parameters.
-    int Count = 0, x;
-    while (1) {
-        x = getClk();
-        if (x < Processes[Count]->ArrivalT) {
-            continue;
-        }
-        // 6. Send the information to the scheduler at the appropriate time.
-        while (x == Processes[Count]->ArrivalT)  // check arrival time of process with the clock
-        {
-            printf("The current time is %d\n", x);
-            Msg_Snd.p = *(Processes[Count]);  // set the process in message buffer
-            send_val = msgsnd(msgq_id, &Msg_Snd, sizeof(Msg_Snd.p), IPC_NOWAIT);
+    int Count = 0;
+    while (Count < NumberOfProcesses) {
+        if (getClk() == Processes[Count]->ArrivalT) {
+            printf("The current time is %d\n", getClk());
+            struct Process p = *(Processes[Count]);
+            send_val = msgsnd(msgq_id, &p, sizeof(p), IPC_NOWAIT);
             if (send_val == -1)  // check send was sucessful
             {
                 perror("Error in send");
+            } else {
+                Count++;
+                printf("I sent the message at time %d\n", getClk());  // print the time of sending
             }
-            Count++;
-            printf("I sent the message at time %d\n", x);  // print the time of sending
-        }
-        if (Count == NumberOfProcesses) {
-            break;
         }
     }
     for (int i = 0; i < NumberOfProcesses; i++) {
@@ -125,4 +123,20 @@ void clearResources(int signum) {
     msgq_del = msgctl(msgq_id, IPC_RMID, 0);  // destroy message queue used to communicate with scheduler
     destroyClk(true);                         // destroy the clk
     exit(0);
+}
+
+int getNoOfProcesses(FILE *f) {
+    int c;
+    int count = 0;
+    while ((c = fgetc(f)) != EOF) {
+        if (c == '\n') {
+            count++;
+        }
+    }
+    fseek(f, 0, SEEK_SET);
+    return count;
+}
+void skipLine(FILE *f) {
+    char ignore[IGNORE_LENGTH];
+    fgets(ignore, IGNORE_LENGTH, f);
 }

@@ -22,8 +22,7 @@ typedef short bool;
 #define SRTN 1
 #define RR 2
 
-#define MaxLengthOfLine 100
-#define No_of_Processes 50
+#define IGNORE_LENGTH 128
 
 #define SHKEY 300
 
@@ -114,10 +113,6 @@ struct Process *Process(int id, int at, int rt, int pr) {
 void DeProcess(struct Process *p) {
     free(p);  // Free Memory
 }
-
-struct msgbuff {
-    struct Process p;
-};
 
 ///==============================
 // don't mess with this variable//
