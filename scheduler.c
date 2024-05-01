@@ -1,5 +1,6 @@
 #include "HPF.h"
 #include "RR.h"
+#include "SRTN.h"
 #include "headers.h"
 
 int main(int argc, char* argv[]) {
@@ -9,11 +10,13 @@ int main(int argc, char* argv[]) {
 
     initClk();
     if (Alg == HPF) {
-        HPFscheduling(ProcNum);
+        HPFScheduling(ProcNum);
     } else if (Alg == SRTN) {
+        SRTNScheduling(ProcNum);
     } else if (Alg == RR) {
         RoundRobinScheduling(Quantum, ProcNum);
     }
     printf("Scheduler Terminated\n");
     destroyClk(false);
+    return 0;
 }

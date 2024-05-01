@@ -71,7 +71,7 @@ struct Process* extractMinHPF(struct MinHeap* minHeap) {
     return root;
 }
 
-void HPFscheduling(int ProcNum) {
+void HPFScheduling(int ProcNum) {
     key_t key_id = ftok("keyfile", 65);
 
     int msgq_id = msgget(key_id, 0666 | IPC_CREAT);
@@ -90,6 +90,7 @@ void HPFscheduling(int ProcNum) {
         bool flag = true;
         while (flag) {
             struct Process messagegen;
+            usleep(1);
             rec_val = msgrcv(msgq_id, &messagegen, sizeof(messagegen), 0, IPC_NOWAIT);
 
             if (rec_val != -1) {

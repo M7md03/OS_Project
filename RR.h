@@ -147,6 +147,7 @@ void RoundRobinScheduling(int q, int ProcNum) {
         while (flag) {
             // Receive messages from the message queue
             struct Process messagegen;
+            usleep(1);
             rec_val = msgrcv(msgq_id, &messagegen, sizeof(messagegen), 0, IPC_NOWAIT);
             // Check for receive errors
 
@@ -154,7 +155,6 @@ void RoundRobinScheduling(int q, int ProcNum) {
                 // Fork a child process
                 Proc[g] = messagegen;
                 pid_t pid = fork();
-
                 // Check for fork errors
                 if (pid == -1) {
                     perror("Error in fork");
@@ -225,8 +225,5 @@ void RoundRobinScheduling(int q, int ProcNum) {
     }
     // Free the allocated memory
     FreeRoundRobin(rr);
-
-    // Destroy the remaining time message queue
-    msgctl(msgid, IPC_RMID, NULL);
 }
 #endif

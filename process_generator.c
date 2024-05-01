@@ -9,7 +9,7 @@ int getNoOfProcesses(FILE *);
 // Function to skip a line in a file
 void skipLine(FILE *);
 
-int msgq_id;
+int msgq_id, msgid;
 
 int main(void) {
     signal(SIGINT, clearResources);
@@ -19,6 +19,9 @@ int main(void) {
 
     // Create or get the message queue
     msgq_id = msgget(key_id, 0666 | IPC_CREAT);
+
+    key_t key = ftok("progfile", 66);
+    msgid = msgget(key, 0666 | IPC_CREAT);
 
     int QUANTA = 0;
     int ALGORITHM;
@@ -37,7 +40,7 @@ int main(void) {
 
     skipLine(fptr);
     NumberOfProcesses = getNoOfProcesses(fptr);
-    Processes = (struct Process **)malloc(NumberOfProcesses * sizeof(struct Process *));
+    Processes = (struct Process **)malloc((NumberOfProcesses + 1) * sizeof(struct Process *));
     skipLine(fptr);
 
     int Id, At, Rt, Pr;
@@ -46,6 +49,7 @@ int main(void) {
         fscanf(fptr, "%d\t%d\t%d\t%d", &Id, &At, &Rt, &Pr);
         Processes[i] = Process(Id, At, Rt, Pr);
     }
+    Processes[NumberOfProcesses] = NULL;
     printf("the number of processses is %d \n", NumberOfProcesses);
     fclose(fptr);
 
@@ -95,7 +99,7 @@ int main(void) {
     int Count = 0;
     while (Count < NumberOfProcesses) {
         int clk = getClk();
-        if (clk == Processes[Count]->ArrivalT) {
+        while (clk == Processes[Count]->ArrivalT) {
             // printf("The current time is %d\n", getClk());
             struct Process p = *(Processes[Count]);
             send_val = msgsnd(msgq_id, &p, sizeof(p), IPC_NOWAIT);
@@ -105,6 +109,12 @@ int main(void) {
                 Count++;
                 printf("Process %d Sent\n", p.ID);
             }
+            if (Processes[Count] == NULL) {
+                break;
+            }
+        }
+        if (Processes[Count] == NULL) {
+            break;
         }
         while (clk == getClk()) {
         }
@@ -120,9 +130,10 @@ int main(void) {
     // Wait for child process to finish
     pid = wait(&status);
     if (WIFEXITED(status)) {
-        int msgq_del;
+        int msgq_del, msgq_del2;
         // Remove the message queue
         msgq_del = msgctl(msgq_id, IPC_RMID, 0);
+        msgq_del2 = msgctl(msgid, IPC_RMID, NULL);
         destroyClk(true);
         exit(0);
     }
@@ -131,9 +142,10 @@ int main(void) {
 // Function to clear resources and handle SIGINT signal
 void clearResources(int signum) {
     printf("process generator stopped\n");
-    int msgq_del;
+    int msgq_del, msgq_del2;
     // Remove the message queue
     msgq_del = msgctl(msgq_id, IPC_RMID, 0);
+    msgq_del2 = msgctl(msgid, IPC_RMID, NULL);
     destroyClk(true);
     exit(0);
 }
