@@ -100,14 +100,13 @@ int main(void) {
     while (Count < NumberOfProcesses) {
         int clk = getClk();
         while (clk == Processes[Count]->ArrivalT) {
-            // printf("The current time is %d\n", getClk());
             struct Process p = *(Processes[Count]);
             send_val = msgsnd(msgq_id, &p, sizeof(p), IPC_NOWAIT);
             if (send_val == -1) {
                 perror("Error in send");
             } else {
                 Count++;
-                // printf("Process %d Sent\n", p.ID);
+                // printf("Process %d sent at clk %d\n", p.ID, clk);
             }
             if (Processes[Count] == NULL) {
                 break;

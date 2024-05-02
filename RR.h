@@ -140,9 +140,6 @@ void RoundRobinScheduling(int q, int ProcNum) {
     while (ProcNum > 0) {
         // Get the current clock time
         int clk = getClk();
-        if (clk == 0) {
-            continue;
-        }
         while (1) {
             // Receive messages from the message queue
             struct Process messagegen;
@@ -176,7 +173,7 @@ void RoundRobinScheduling(int q, int ProcNum) {
                 //        Proc[g].ArrivalT, Proc[g].RunT, Proc[g].P, Proc[g].pid);
 
                 // Update the process ID and enqueue it
-                kill(pid, SIGSTOP);
+                kill(Proc[g].pid, SIGSTOP);
                 enqueue(rr, &Proc[g]);
                 g++;
             } else {
@@ -185,9 +182,10 @@ void RoundRobinScheduling(int q, int ProcNum) {
         }
         // Resume the process execution and receive the remaining time
         if (rr->RUN != NULL) {
-            msgrcv(msgid, &msg, sizeof(msg), 0, !IPC_NOWAIT);
+            msg.mtype = rr->RUN->pid;
+            msgrcv(msgid, &msg, sizeof(msg), msg.mtype, !IPC_NOWAIT);
             rr->RUN->RemT = msg.remainingtime;
-            printf("Process %d remaining time = %d\n", rr->RUN->ID, rr->RUN->RemT);
+            // printf("Process %d remaining time = %d\n", rr->RUN->ID, msg.remainingtime);
             rr->runQuantum--;
             // Check if the time quantum is exhausted or the process is finished
             if (rr->runQuantum == 0 || rr->RUN->RemT == 0) {
@@ -195,6 +193,7 @@ void RoundRobinScheduling(int q, int ProcNum) {
                     // Time quantum is exhausted, pause the process and enqueue it
                     if (!isEmpty(rr)) {
                         kill(rr->RUN->pid, SIGSTOP);
+                        // printf("pid = %d\n", rr->RUN->pid);
                         printf("At time\t%d\tprocess\t%d\tstopped  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
                                rr->RUN->ID, rr->RUN->ArrivalT, rr->RUN->RunT, rr->RUN->RemT,
                                clk - rr->RUN->ArrivalT - rr->RUN->RunT + rr->RUN->RemT);

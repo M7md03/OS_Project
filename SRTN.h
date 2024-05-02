@@ -96,9 +96,6 @@ void SRTNScheduling(int ProcNum) {
     int g = 0;
     while (ProcNum > 0) {
         int clk = getClk();
-        if (clk == 0) {
-            continue;
-        }
         while (1) {
             struct Process messagegen;
             struct timespec req;
@@ -139,49 +136,31 @@ void SRTNScheduling(int ProcNum) {
                 break;
             }
         }
-        if (!isEmptyMin(minHeap) && minHeap->RUN == NULL) {
-            // Extract a process and set it to the RUN state
-            minHeap->RUN = extractMinSRTN(minHeap);
-            if (minHeap->RUN->StartT != -1) {
-                printf("At time\t%d\tprocess\t%d\tresumed  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
-                       minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
-                       clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT);
-            }
-        }
         if (minHeap->RUN != NULL) {
-            kill(minHeap->RUN->pid, SIGCONT);
-            // Update the start time if necessary
-            if (minHeap->RUN->StartT == -1) {
-                minHeap->RUN->StartT = clk;
-                printf("At time\t%d\tprocess\t%d\tstarted  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
-                       minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
-                       clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT);
-            }
-            msgrcv(msgid, &msg, sizeof(msg), 0, !IPC_NOWAIT);
+            msg.mtype = minHeap->RUN->pid;
+            msgrcv(msgid, &msg, sizeof(msg), msg.mtype, !IPC_NOWAIT);
             minHeap->RUN->RemT = msg.remainingtime;
             //   Check if the process is finished
             if (minHeap->RUN->RemT > MinTime(minHeap) || minHeap->RUN->RemT == 0) {
                 if (minHeap->RUN->RemT > 0) {
                     if (!isEmptyMin(minHeap)) {
                         kill(minHeap->RUN->pid, SIGSTOP);
-                        printf("At time\t%d\tprocess\t%d\tstopped  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk + 1,
+                        printf("At time\t%d\tprocess\t%d\tstopped  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
                                minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
-                               clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT + 1);
+                               clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT);
                         insertProcessSRTN(minHeap, minHeap->RUN);
                         minHeap->RUN = NULL;
                     }
                 } else {
                     // Process is finished, pause the process, update end time, and free memory
                     wait(NULL);
-                    minHeap->RUN->EndT = clk + 1;
                     ProcNum--;
                     printf(
                         "At time\t%d\tprocess\t%d\tfinished "
                         "arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\tTA\t%d\tWTA\t%.2f\n",
-                        clk + 1, minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
-                        clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT + 1,
-                        clk + 1 - minHeap->RUN->ArrivalT,
-                        (float)(clk + 1 - minHeap->RUN->ArrivalT) / minHeap->RUN->RunT);
+                        clk, minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
+                        clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT,
+                        clk - minHeap->RUN->ArrivalT, (float)(clk - minHeap->RUN->ArrivalT) / minHeap->RUN->RunT);
                     minHeap->RUN = NULL;
                 }
             }
@@ -189,8 +168,16 @@ void SRTNScheduling(int ProcNum) {
         if (!isEmptyMin(minHeap) && minHeap->RUN == NULL) {
             // Extract a process and set it to the RUN state
             minHeap->RUN = extractMinSRTN(minHeap);
+            kill(minHeap->RUN->pid, SIGCONT);
             if (minHeap->RUN->StartT != -1) {
                 printf("At time\t%d\tprocess\t%d\tresumed  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
+                       minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
+                       clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT);
+            }
+            // Update the start time if necessary
+            if (minHeap->RUN->StartT == -1) {
+                minHeap->RUN->StartT = clk;
+                printf("At time\t%d\tprocess\t%d\tstarted  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
                        minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
                        clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT);
             }

@@ -19,18 +19,18 @@ int main(int agrc, char* argv[]) {
 
     while (remainingtime > 0) {
         int clk = getClk();
-        if (clk != 0) {
-            remainingtime--;
-            msg.remainingtime = remainingtime;
-            // printf("Process %d: Remaining time = %d\n", id, remainingtime);
-            msgsnd(msgid, &msg, sizeof(msg), !IPC_NOWAIT);
-            if (remainingtime == 0) {
-                // printf("Procces %d Terminated at clk = %d\n", id, getClk());
-                destroyClk(false);
-                return 0;
-            }
+        remainingtime--;
+        msg.remainingtime = remainingtime;
+        // printf("Process %d: Remaining time = %d\n", id, remainingtime);
+        msgsnd(msgid, &msg, sizeof(msg), !IPC_NOWAIT);
+        if (remainingtime == 0) {
+            // printf("Procces %d Terminated at clk = %d\n", id, getClk());
+            destroyClk(false);
+            return 0;
         }
         while (clk == getClk()) {
         }
     }
+    destroyClk(false);
+    return 0;
 }
