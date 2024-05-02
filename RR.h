@@ -148,10 +148,13 @@ void RoundRobinScheduling(int q, int ProcNum) {
         while (flag) {
             // Receive messages from the message queue
             struct Process messagegen;
-            usleep(1);
+            struct timespec req;
+            req.tv_sec = 0;
+            req.tv_nsec = 1;  // 1 nanosecond
+
+            nanosleep(&req, NULL);
             rec_val = msgrcv(msgq_id, &messagegen, sizeof(messagegen), 0, IPC_NOWAIT);
             // Check for receive errors
-
             if (rec_val != -1) {
                 // Fork a child process
                 Proc[g] = messagegen;
@@ -213,9 +216,10 @@ void RoundRobinScheduling(int q, int ProcNum) {
                     // Process is finished, pause the process, update end time, and free memory
                     rr->runQuantum = rr->quantum;
                     wait(NULL);
-                    rr->RUN->EndT = clk;
+                    rr->RUN->EndT = clk + 1;
                     ProcNum--;
-                    printf("Proccess %d is Finished, StartT = %d\n", rr->RUN->ID, rr->RUN->StartT);
+                    printf("Proccess %d is Finished, StartT = %d, EndT = %d\n", rr->RUN->ID, rr->RUN->StartT,
+                           rr->RUN->EndT);
                     rr->RUN = NULL;
                 }
             }

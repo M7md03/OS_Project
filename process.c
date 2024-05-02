@@ -25,7 +25,7 @@ int main(int agrc, char* argv[]) {
         printf("Process %d: Remaining time = %d\n", id, remainingtime);
         msgsnd(msgid, &msg, sizeof(msg), !IPC_NOWAIT);
         if (remainingtime == 0) {
-            printf("Procces %d Terminated at clk = %d\n", id, getClk());
+            // printf("Procces %d Terminated at clk = %d\n", id, getClk());
             destroyClk(false);
             return 0;
         }

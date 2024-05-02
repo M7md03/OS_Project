@@ -102,7 +102,11 @@ void SRTNScheduling(int ProcNum) {
         bool flag = true;
         while (flag) {
             struct Process messagegen;
-            usleep(1);
+            struct timespec req;
+            req.tv_sec = 0;
+            req.tv_nsec = 1;  // 1 nanosecond
+
+            nanosleep(&req, NULL);
             rec_val = msgrcv(msgq_id, &messagegen, sizeof(messagegen), 0, IPC_NOWAIT);
 
             if (rec_val != -1) {
@@ -160,9 +164,10 @@ void SRTNScheduling(int ProcNum) {
                 } else {
                     // Process is finished, pause the process, update end time, and free memory
                     wait(NULL);
-                    minHeap->RUN->EndT = clk;
+                    minHeap->RUN->EndT = clk + 1;
                     ProcNum--;
-                    printf("Proccess %d is Finished, StartT = %d\n", minHeap->RUN->ID, minHeap->RUN->StartT);
+                    printf("Proccess %d is Finished, StartT = %d, EndT = %d\n", minHeap->RUN->ID, minHeap->RUN->StartT,
+                           minHeap->RUN->EndT);
                     minHeap->RUN = NULL;
                 }
             }
