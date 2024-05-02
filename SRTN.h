@@ -99,8 +99,7 @@ void SRTNScheduling(int ProcNum) {
         if (clk == 0) {
             continue;
         }
-        bool flag = true;
-        while (flag) {
+        while (1) {
             struct Process messagegen;
             struct timespec req;
             req.tv_sec = 0;
@@ -128,36 +127,51 @@ void SRTNScheduling(int ProcNum) {
                     }
                 }
                 Proc[g].pid = pid;
-                printf("#%d  Process %d Recieved, ArivT: %d, RunT: %d, P: %d, PID: %d\n", clk, Proc[g].ID,
-                       Proc[g].ArrivalT, Proc[g].RunT, Proc[g].P, Proc[g].pid);
+                // printf("#%d  Process %d Recieved, ArivT: %d, RunT: %d, P: %d, PID: %d\n", clk, Proc[g].ID,
+                //        Proc[g].ArrivalT, Proc[g].RunT, Proc[g].P, Proc[g].pid);
 
                 // Update the process ID and enqueue it
                 kill(pid, SIGSTOP);
                 insertProcessSRTN(minHeap, &Proc[g]);
+                // printf("Process %d arrived at %d\n", Proc[g].ID, clk);
                 g++;
             } else {
-                flag = false;
+                break;
             }
         }
         if (!isEmptyMin(minHeap) && minHeap->RUN == NULL) {
             // Extract a process and set it to the RUN state
             minHeap->RUN = extractMinSRTN(minHeap);
-            printf("Proccess %d is in RUN\n", minHeap->RUN->ID);
+            if (minHeap->RUN->StartT != -1) {
+                printf("At time\t%d\tprocess\t%d\tresumed  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
+                       minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
+                       clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT);
+            }
         }
         if (minHeap->RUN != NULL) {
             kill(minHeap->RUN->pid, SIGCONT);
             // Update the start time if necessary
             if (minHeap->RUN->StartT == -1) {
                 minHeap->RUN->StartT = clk;
+                printf("PID = %d\n", minHeap->RUN->pid);
+                // kill(minHeap->RUN->pid, SIGUSR1);
+                printf("At time\t%d\tprocess\t%d\tstarted  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
+                       minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
+                       clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT);
             }
             msgrcv(msgid, &msg, sizeof(msg), 0, !IPC_NOWAIT);
             minHeap->RUN->RemT = msg.remainingtime;
-            // Check if the process is finished
+            printf("Remaining time: %d\n", minHeap->RUN->RemT);
+            printf("Min time: %d\n", MinTime(minHeap));
+            //  Check if the process is finished
             if (minHeap->RUN->RemT > MinTime(minHeap) || minHeap->RUN->RemT == 0) {
                 if (minHeap->RUN->RemT > 0) {
-                    // Time quantum is exhausted, pause the process and enqueue it
+                    printf("#%d Test %d\n", clk, minHeap->size);
                     if (!isEmptyMin(minHeap)) {
                         kill(minHeap->RUN->pid, SIGSTOP);
+                        printf("At time\t%d\tprocess\t%d\tstopped  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk + 1,
+                               minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
+                               clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT + 1);
                         insertProcessSRTN(minHeap, minHeap->RUN);
                         minHeap->RUN = NULL;
                     }
@@ -166,8 +180,13 @@ void SRTNScheduling(int ProcNum) {
                     wait(NULL);
                     minHeap->RUN->EndT = clk + 1;
                     ProcNum--;
-                    printf("Proccess %d is Finished, StartT = %d, EndT = %d\n", minHeap->RUN->ID, minHeap->RUN->StartT,
-                           minHeap->RUN->EndT);
+                    printf(
+                        "At time\t%d\tprocess\t%d\tfinished "
+                        "arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\tTA\t%d\tWTA\t%.2f\n",
+                        clk + 1, minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
+                        clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT + 1,
+                        clk + 1 - minHeap->RUN->ArrivalT,
+                        (float)(clk + 1 - minHeap->RUN->ArrivalT) / minHeap->RUN->RunT);
                     minHeap->RUN = NULL;
                 }
             }

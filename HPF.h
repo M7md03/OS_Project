@@ -89,9 +89,7 @@ void HPFScheduling(int ProcNum) {
         if (clk == 0) {
             continue;
         }
-
-        bool flag = true;
-        while (flag) {
+        while (1) {
             struct Process messagegen;
             struct timespec req;
             req.tv_sec = 0;
@@ -119,27 +117,30 @@ void HPFScheduling(int ProcNum) {
                     }
                 }
                 Proc[g].pid = pid;
-                printf("#%d  Process %d Recieved, ArivT: %d, RunT: %d, P: %d, PID: %d\n", clk, Proc[g].ID,
-                       Proc[g].ArrivalT, Proc[g].RunT, Proc[g].P, Proc[g].pid);
+                // printf("#%d  Process %d Recieved, ArivT: %d, RunT: %d, P: %d, PID: %d\n", clk, Proc[g].ID,
+                //        Proc[g].ArrivalT, Proc[g].RunT, Proc[g].P, Proc[g].pid);
 
                 // Update the process ID and enqueue it
                 kill(pid, SIGSTOP);
                 insertProcessHPF(minHeap, &Proc[g]);
                 g++;
             } else {
-                flag = false;
+                break;
             }
         }
         if (!isEmptyMin(minHeap) && minHeap->RUN == NULL) {
             // Extract a process and set it to the RUN state
             minHeap->RUN = extractMinHPF(minHeap);
-            printf("Proccess %d is in RUN\n", minHeap->RUN->ID);
+            // printf("Proccess %d is in RUN\n", minHeap->RUN->ID);
         }
         if (minHeap->RUN != NULL) {
             kill(minHeap->RUN->pid, SIGCONT);
             // Update the start time if necessary
             if (minHeap->RUN->StartT == -1) {
                 minHeap->RUN->StartT = clk;
+                printf("At time\t%d\tprocess\t%d\tstarted  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
+                       minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
+                       clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT);
             }
             msgrcv(msgid, &msg, sizeof(msg), 0, !IPC_NOWAIT);
             minHeap->RUN->RemT = msg.remainingtime;
@@ -149,8 +150,11 @@ void HPFScheduling(int ProcNum) {
                 wait(NULL);
                 minHeap->RUN->EndT = clk + 1;
                 ProcNum--;
-                printf("Proccess %d is Finished, StartT = %d, EndT = %d\n", minHeap->RUN->ID, minHeap->RUN->StartT,
-                       minHeap->RUN->EndT);
+                printf(
+                    "At time\t%d\tprocess\t%d\tfinished arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\tTA\t%d\tWTA\t%.2f\n",
+                    clk + 1, minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
+                    clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT + 1,
+                    clk + 1 - minHeap->RUN->ArrivalT, (float)(clk + 1 - minHeap->RUN->ArrivalT) / minHeap->RUN->RunT);
                 minHeap->RUN = NULL;
             }
         }

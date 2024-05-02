@@ -107,7 +107,7 @@ int main(void) {
                 perror("Error in send");
             } else {
                 Count++;
-                printf("Process %d Sent\n", p.ID);
+                // printf("Process %d Sent\n", p.ID);
             }
             if (Processes[Count] == NULL) {
                 break;
