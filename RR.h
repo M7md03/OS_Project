@@ -169,9 +169,6 @@ void RoundRobinScheduling(int q, int ProcNum) {
                     }
                 }
                 Proc[g].pid = pid;
-                // printf("#%d  Process %d Recieved, ArivT: %d, RunT: %d, P: %d, PID: %d\n", clk, Proc[g].ID,
-                //        Proc[g].ArrivalT, Proc[g].RunT, Proc[g].P, Proc[g].pid);
-
                 // Update the process ID and enqueue it
                 kill(Proc[g].pid, SIGSTOP);
                 enqueue(rr, &Proc[g]);
@@ -185,7 +182,6 @@ void RoundRobinScheduling(int q, int ProcNum) {
             msg.mtype = rr->RUN->pid;
             msgrcv(msgid, &msg, sizeof(msg), msg.mtype, !IPC_NOWAIT);
             rr->RUN->RemT = msg.remainingtime;
-            // printf("Process %d remaining time = %d\n", rr->RUN->ID, msg.remainingtime);
             rr->runQuantum--;
             // Check if the time quantum is exhausted or the process is finished
             if (rr->runQuantum == 0 || rr->RUN->RemT == 0) {
@@ -193,11 +189,9 @@ void RoundRobinScheduling(int q, int ProcNum) {
                     // Time quantum is exhausted, pause the process and enqueue it
                     if (!isEmpty(rr)) {
                         kill(rr->RUN->pid, SIGSTOP);
-                        // printf("pid = %d\n", rr->RUN->pid);
                         printf("At time\t%d\tprocess\t%d\tstopped  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
                                rr->RUN->ID, rr->RUN->ArrivalT, rr->RUN->RunT, rr->RUN->RemT,
                                clk - rr->RUN->ArrivalT - rr->RUN->RunT + rr->RUN->RemT);
-                        // printf("runQuantum = %d\n", rr->runQuantum);
                         enqueue(rr, rr->RUN);
                         rr->RUN = NULL;
                     }
@@ -220,7 +214,6 @@ void RoundRobinScheduling(int q, int ProcNum) {
             // Dequeue a process and set it to the RUN state
             rr->RUN = dequeue(rr);
             kill(rr->RUN->pid, SIGCONT);
-            // printf("runQuantum = %d\n", rr->runQuantum);
             if (rr->RUN->StartT != -1) {
                 printf("At time\t%d\tprocess\t%d\tresumed  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
                        rr->RUN->ID, rr->RUN->ArrivalT, rr->RUN->RunT, rr->RUN->RemT,
