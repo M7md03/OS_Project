@@ -183,29 +183,11 @@ void RoundRobinScheduling(int q, int ProcNum) {
                 break;
             }
         }
-
-        // Check if the Round Robin queue is not empty
-        if (!isEmpty(rr) && rr->RUN == NULL) {
-            // Dequeue a process and set it to the RUN state
-            rr->RUN = dequeue(rr);
-            if (rr->RUN->StartT != -1) {
-                printf("At time\t%d\tprocess\t%d\tresumed  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
-                       rr->RUN->ID, rr->RUN->ArrivalT, rr->RUN->RunT, rr->RUN->RemT,
-                       clk - rr->RUN->ArrivalT - rr->RUN->RunT + rr->RUN->RemT);
-            }
-        }
         // Resume the process execution and receive the remaining time
         if (rr->RUN != NULL) {
-            kill(rr->RUN->pid, SIGCONT);
-            // Update the start time if necessary
-            if (rr->RUN->StartT == -1) {
-                rr->RUN->StartT = clk;
-                printf("At time\t%d\tprocess\t%d\tstarted  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
-                       rr->RUN->ID, rr->RUN->ArrivalT, rr->RUN->RunT, rr->RUN->RemT,
-                       clk - rr->RUN->ArrivalT - rr->RUN->RunT + rr->RUN->RemT);
-            }
             msgrcv(msgid, &msg, sizeof(msg), 0, !IPC_NOWAIT);
             rr->RUN->RemT = msg.remainingtime;
+            printf("Process %d remaining time = %d\n", rr->RUN->ID, rr->RUN->RemT);
             rr->runQuantum--;
             // Check if the time quantum is exhausted or the process is finished
             if (rr->runQuantum == 0 || rr->RUN->RemT == 0) {
@@ -213,26 +195,44 @@ void RoundRobinScheduling(int q, int ProcNum) {
                     // Time quantum is exhausted, pause the process and enqueue it
                     if (!isEmpty(rr)) {
                         kill(rr->RUN->pid, SIGSTOP);
-                        printf("At time\t%d\tprocess\t%d\tstopped  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk + 1,
+                        printf("At time\t%d\tprocess\t%d\tstopped  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
                                rr->RUN->ID, rr->RUN->ArrivalT, rr->RUN->RunT, rr->RUN->RemT,
-                               clk - rr->RUN->ArrivalT - rr->RUN->RunT + rr->RUN->RemT + 1);
+                               clk - rr->RUN->ArrivalT - rr->RUN->RunT + rr->RUN->RemT);
+                        // printf("runQuantum = %d\n", rr->runQuantum);
                         enqueue(rr, rr->RUN);
                         rr->RUN = NULL;
                     }
                 } else {
                     // Process is finished, pause the process, update end time, and free memory
                     wait(NULL);
-                    rr->RUN->EndT = clk + 1;
                     ProcNum--;
                     printf(
                         "At time\t%d\tprocess\t%d\tfinished "
                         "arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\tTA\t%d\tWTA\t%.2f\n",
-                        clk + 1, rr->RUN->ID, rr->RUN->ArrivalT, rr->RUN->RunT, rr->RUN->RemT,
-                        clk - rr->RUN->ArrivalT - rr->RUN->RunT + rr->RUN->RemT, rr->RUN->EndT - rr->RUN->ArrivalT,
-                        (float)(rr->RUN->EndT - rr->RUN->ArrivalT) / rr->RUN->RunT);
+                        clk, rr->RUN->ID, rr->RUN->ArrivalT, rr->RUN->RunT, rr->RUN->RemT,
+                        clk - rr->RUN->ArrivalT - rr->RUN->RunT, clk - rr->RUN->ArrivalT,
+                        (float)(clk - rr->RUN->ArrivalT) / rr->RUN->RunT);
                     rr->RUN = NULL;
                 }
                 rr->runQuantum = rr->quantum;
+            }
+        }
+        if (!isEmpty(rr) && rr->RUN == NULL) {
+            // Dequeue a process and set it to the RUN state
+            rr->RUN = dequeue(rr);
+            kill(rr->RUN->pid, SIGCONT);
+            // printf("runQuantum = %d\n", rr->runQuantum);
+            if (rr->RUN->StartT != -1) {
+                printf("At time\t%d\tprocess\t%d\tresumed  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
+                       rr->RUN->ID, rr->RUN->ArrivalT, rr->RUN->RunT, rr->RUN->RemT,
+                       clk - rr->RUN->ArrivalT - rr->RUN->RunT + rr->RUN->RemT);
+            }
+            // Update the start time if necessary
+            if (rr->RUN->StartT == -1) {
+                rr->RUN->StartT = clk;
+                printf("At time\t%d\tprocess\t%d\tstarted  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
+                       rr->RUN->ID, rr->RUN->ArrivalT, rr->RUN->RunT, rr->RUN->RemT,
+                       clk - rr->RUN->ArrivalT - rr->RUN->RunT + rr->RUN->RemT);
             }
         }
         // Wait until the clock time changes

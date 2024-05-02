@@ -153,20 +153,15 @@ void SRTNScheduling(int ProcNum) {
             // Update the start time if necessary
             if (minHeap->RUN->StartT == -1) {
                 minHeap->RUN->StartT = clk;
-                printf("PID = %d\n", minHeap->RUN->pid);
-                // kill(minHeap->RUN->pid, SIGUSR1);
                 printf("At time\t%d\tprocess\t%d\tstarted  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
                        minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
                        clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT);
             }
             msgrcv(msgid, &msg, sizeof(msg), 0, !IPC_NOWAIT);
             minHeap->RUN->RemT = msg.remainingtime;
-            printf("Remaining time: %d\n", minHeap->RUN->RemT);
-            printf("Min time: %d\n", MinTime(minHeap));
-            //  Check if the process is finished
+            //   Check if the process is finished
             if (minHeap->RUN->RemT > MinTime(minHeap) || minHeap->RUN->RemT == 0) {
                 if (minHeap->RUN->RemT > 0) {
-                    printf("#%d Test %d\n", clk, minHeap->size);
                     if (!isEmptyMin(minHeap)) {
                         kill(minHeap->RUN->pid, SIGSTOP);
                         printf("At time\t%d\tprocess\t%d\tstopped  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk + 1,
@@ -190,9 +185,17 @@ void SRTNScheduling(int ProcNum) {
                     minHeap->RUN = NULL;
                 }
             }
-            // Wait until the clock time changes
-            while (clk == getClk()) {
+        }
+        if (!isEmptyMin(minHeap) && minHeap->RUN == NULL) {
+            // Extract a process and set it to the RUN state
+            minHeap->RUN = extractMinSRTN(minHeap);
+            if (minHeap->RUN->StartT != -1) {
+                printf("At time\t%d\tprocess\t%d\tresumed  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
+                       minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
+                       clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT);
             }
+        }
+        while (clk == getClk()) {
         }
     }
     // Free the allocated memory
