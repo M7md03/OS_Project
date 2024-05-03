@@ -43,6 +43,7 @@ int main(int argc, char *argv[])
     }
 
     int clk = getClk() - 1;
+    printf("clk = %d\n", clk);
     float util = (float)(totalUtil / clk) * 100;
     PrintPerf(fout, util, totalWTA, totalWait, ProcNum, WTA);
 
@@ -57,11 +58,11 @@ void PrintPerf(FILE *fout, float util, float totalWTA, int totalWait, int ProcNu
 {
     double sum = 0.0;
     fprintf(fout, "CPU utitilization = %.2f%%\n", util);
-    fprintf(fout, "Avg WTA = %.2f%%\n", totalWTA / ProcNum);
-    fprintf(fout, "Avg Waiting = %.2f%%\n", (float)totalWait / ProcNum);
+    fprintf(fout, "Avg WTA = %.2f\n", totalWTA / ProcNum);
+    fprintf(fout, "Avg Waiting = %.2f\n", (float)totalWait / ProcNum);
     for (int i = 0; i < ProcNum; i++)
     {
         sum += (WTA[i] - totalWTA / ProcNum) * (WTA[i] - totalWTA / ProcNum);
     }
-    fprintf(fout, "Std WTA = %.2f%%\n", sqrt(sum / ProcNum));
+    fprintf(fout, "Std WTA = %.2f\n", sqrt(sum / ProcNum));
 }
