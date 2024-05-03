@@ -43,10 +43,10 @@ int main(int argc, char *argv[])
     }
 
     int clk = getClk() - 1;
-    printf("clk = %d\n", clk);
-    printf("totalutil = %d", totalUtil);
-    float util = (float)(totalUtil / clk) * 100;
-    printf("util = %.2f", util);
+    //printf("clk = %d\n", clk);
+    //printf("totalutil = %d", totalUtil);
+    float util = (float)(((totalUtil + 1) / clk) * 100);
+    //printf("util = %.2f", util);
     PrintPerf(fout, util, totalWTA, totalWait, ProcNum, WTA);
 
     fclose(fptr);
