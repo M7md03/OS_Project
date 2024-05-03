@@ -2,7 +2,7 @@
 #define HEADERS_H
 
 #include <signal.h>
-#include <stdio.h>  //if you don't use scanf/printf change this include
+#include <stdio.h> //if you don't use scanf/printf change this include
 #include <stdlib.h>
 #include <sys/file.h>
 #include <sys/ipc.h>
@@ -14,6 +14,7 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
+#include <math.h>
 
 typedef short bool;
 #define true 1
@@ -27,13 +28,15 @@ typedef short bool;
 
 #define SHKEY 300
 
-struct msgRemaining {
+struct msgRemaining
+{
     long mtype;
     int remainingtime;
 };
 
-struct MinHeap {
-    struct Process **array;  // Array of pointers to Process structs
+struct MinHeap
+{
+    struct Process **array; // Array of pointers to Process structs
     int size;
     int capacity;
     struct Process *RUN;
@@ -44,12 +47,13 @@ struct MinHeap {
  *
  * @return a pointer to the newly created min heap, or NULL if memory allocation fails
  */
-struct MinHeap *MinHeap(int c) {
-    struct MinHeap *minHeap = (struct MinHeap *)malloc(sizeof(struct MinHeap));  // Dynamically allocate a min heap
-    minHeap->capacity = c;                                                       // Initial capacity
+struct MinHeap *MinHeap(int c)
+{
+    struct MinHeap *minHeap = (struct MinHeap *)malloc(sizeof(struct MinHeap)); // Dynamically allocate a min heap
+    minHeap->capacity = c;                                                      // Initial capacity
     minHeap->size = 0;
     minHeap->array = (struct Process **)malloc(
-        minHeap->capacity * sizeof(struct Process *));  // Dynamically allocate memory for the array of pointers
+        minHeap->capacity * sizeof(struct Process *)); // Dynamically allocate memory for the array of pointers
     return minHeap;
 }
 bool isEmptyMin(struct MinHeap *minHeap) { return minHeap->size == 0; }
@@ -60,26 +64,29 @@ bool isEmptyMin(struct MinHeap *minHeap) { return minHeap->size == 0; }
  * @param a a pointer to the first element
  * @param b a pointer to the second element
  */
-void swap(struct Process **a, struct Process **b) {
+void swap(struct Process **a, struct Process **b)
+{
     struct Process *temp = *a;
     *a = *b;
     *b = temp;
 }
 
-void FreeMin(struct MinHeap *minHeap) {
+void FreeMin(struct MinHeap *minHeap)
+{
     free(minHeap->array);
     free(minHeap);
 }
 
-struct Process {
-    pid_t pid;  // Process ID
+struct Process
+{
+    pid_t pid; // Process ID
     int ID;
-    int ArrivalT;  // Arrival Time
-    int StartT;    // Start Time
-    int RunT;      // Running Time
-    int RemT;      // Remaining Time
-    int EndT;      // End Time
-    int P;         // Priority
+    int ArrivalT; // Arrival Time
+    int StartT;   // Start Time
+    int RunT;     // Running Time
+    int RemT;     // Remaining Time
+    int EndT;     // End Time
+    int P;        // Priority
 };
 
 /**
@@ -97,29 +104,32 @@ struct Process {
  *
  * @return A pointer to the newly created process, or NULL if memory allocation fails.
  */
-struct Process *Process(int id, int at, int rt, int pr) {
-    struct Process *p = malloc(sizeof(struct Process));  // Dynamically allocate a process
-    if (p == NULL) {
+struct Process *Process(int id, int at, int rt, int pr)
+{
+    struct Process *p = malloc(sizeof(struct Process)); // Dynamically allocate a process
+    if (p == NULL)
+    {
         printf("Memory allocation failed.\n");
         exit(1);
     }
-    p->pid = -20;      // Initalize PID
-    p->ID = id;        // Set ID
-    p->ArrivalT = at;  // Set Arrival Time
-    p->StartT = -1;    // Set Start Time
-    p->RunT = rt;      // Set Running Time
-    p->RemT = rt;      // Set Remaining Time
-    p->P = pr;         // Set Priority
+    p->pid = -20;     // Initalize PID
+    p->ID = id;       // Set ID
+    p->ArrivalT = at; // Set Arrival Time
+    p->StartT = -1;   // Set Start Time
+    p->RunT = rt;     // Set Running Time
+    p->RemT = rt;     // Set Remaining Time
+    p->P = pr;        // Set Priority
     return p;
 }
 
-void DeProcess(struct Process *p) {
-    free(p);  // Free Memory
+void DeProcess(struct Process *p)
+{
+    free(p); // Free Memory
 }
 
 ///==============================
 // don't mess with this variable//
-int *shmaddr;  //
+int *shmaddr; //
 //===============================
 
 int getClk() { return *shmaddr; }
@@ -129,9 +139,11 @@ int getClk() { return *shmaddr; }
  * communication between them and the clock module. Again, remember that the
  * clock is only emulation!
  */
-void initClk() {
+void initClk()
+{
     int shmid = shmget(SHKEY, 4, 0444);
-    while ((int)shmid == -1) {
+    while ((int)shmid == -1)
+    {
         // Make sure that the clock exists
         printf("Wait! The clock not initialized yet!\n");
         sleep(1);
@@ -148,9 +160,11 @@ void initClk() {
  * simulation. It terminates the whole system and releases resources.
  */
 
-void destroyClk(bool terminateAll) {
+void destroyClk(bool terminateAll)
+{
     shmdt(shmaddr);
-    if (terminateAll) {
+    if (terminateAll)
+    {
         killpg(getpgrp(), SIGINT);
     }
 }

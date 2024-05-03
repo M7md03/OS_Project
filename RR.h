@@ -115,7 +115,7 @@ void FreeRoundRobin(struct RoundRobin *rr) {
  * @param q The time quantum for each process.
  * @param ProcNum The number of processes to be scheduled.
  */
-void RoundRobinScheduling(int q, int ProcNum) {
+void RoundRobinScheduling(int q, int ProcNum, FILE* fptr, float *totalWTA, int *totalWait, int *totalUtil, float* WTA) {
     struct Process *Proc = (struct Process *)malloc(ProcNum * sizeof(struct Process));
     // Create a RoundRobin struct
     struct RoundRobin *rr = createRoundRobin(q, ProcNum);
@@ -136,6 +136,7 @@ void RoundRobinScheduling(int q, int ProcNum) {
     // Define the remaining time message struct
     struct msgRemaining msg;
     int g = 0;
+    int i = 0;
     // Start the scheduling loop
     while (ProcNum > 0) {
         // Get the current clock time
@@ -192,6 +193,9 @@ void RoundRobinScheduling(int q, int ProcNum) {
                         printf("At time\t%d\tprocess\t%d\tstopped  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
                                rr->RUN->ID, rr->RUN->ArrivalT, rr->RUN->RunT, rr->RUN->RemT,
                                clk - rr->RUN->ArrivalT - rr->RUN->RunT + rr->RUN->RemT);
+                        fprintf(fptr, "At time\t%d\tprocess\t%d\tstopped  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
+                               rr->RUN->ID, rr->RUN->ArrivalT, rr->RUN->RunT, rr->RUN->RemT,
+                               clk - rr->RUN->ArrivalT - rr->RUN->RunT + rr->RUN->RemT);
                         enqueue(rr, rr->RUN);
                         rr->RUN = NULL;
                     }
@@ -205,6 +209,15 @@ void RoundRobinScheduling(int q, int ProcNum) {
                         clk, rr->RUN->ID, rr->RUN->ArrivalT, rr->RUN->RunT, rr->RUN->RemT,
                         clk - rr->RUN->ArrivalT - rr->RUN->RunT, clk - rr->RUN->ArrivalT,
                         (float)(clk - rr->RUN->ArrivalT) / rr->RUN->RunT);
+                    fprintf(fptr, "At time\t%d\tprocess\t%d\tfinished "
+                        "arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\tTA\t%d\tWTA\t%.2f\n",
+                        clk, rr->RUN->ID, rr->RUN->ArrivalT, rr->RUN->RunT, rr->RUN->RemT,
+                        clk - rr->RUN->ArrivalT - rr->RUN->RunT, clk - rr->RUN->ArrivalT,
+                        (float)(clk - rr->RUN->ArrivalT) / rr->RUN->RunT);
+                    *totalWTA += (float)(clk - rr->RUN->ArrivalT) / rr->RUN->RunT;
+                    *totalWait += clk - rr->RUN->ArrivalT - rr->RUN->RunT;
+                    WTA[i] = (float)(clk - rr->RUN->ArrivalT) / rr->RUN->RunT;
+                    i++;
                     rr->RUN = NULL;
                 }
                 rr->runQuantum = rr->quantum;
@@ -218,6 +231,9 @@ void RoundRobinScheduling(int q, int ProcNum) {
                 printf("At time\t%d\tprocess\t%d\tresumed  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
                        rr->RUN->ID, rr->RUN->ArrivalT, rr->RUN->RunT, rr->RUN->RemT,
                        clk - rr->RUN->ArrivalT - rr->RUN->RunT + rr->RUN->RemT);
+                fprintf(fptr, "At time\t%d\tprocess\t%d\tresumed  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
+                       rr->RUN->ID, rr->RUN->ArrivalT, rr->RUN->RunT, rr->RUN->RemT,
+                       clk - rr->RUN->ArrivalT - rr->RUN->RunT + rr->RUN->RemT);
             }
             // Update the start time if necessary
             if (rr->RUN->StartT == -1) {
@@ -225,7 +241,14 @@ void RoundRobinScheduling(int q, int ProcNum) {
                 printf("At time\t%d\tprocess\t%d\tstarted  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
                        rr->RUN->ID, rr->RUN->ArrivalT, rr->RUN->RunT, rr->RUN->RemT,
                        clk - rr->RUN->ArrivalT - rr->RUN->RunT + rr->RUN->RemT);
+                fprintf(fptr, "At time\t%d\tprocess\t%d\tstarted  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
+                       rr->RUN->ID, rr->RUN->ArrivalT, rr->RUN->RunT, rr->RUN->RemT,
+                       clk - rr->RUN->ArrivalT - rr->RUN->RunT + rr->RUN->RemT);
             }
+        }
+        if (rr->RUN != NULL)
+        {
+            (*totalUtil)++;
         }
         // Wait until the clock time changes
         while (clk == getClk()) {

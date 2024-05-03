@@ -71,7 +71,7 @@ struct Process* extractMinHPF(struct MinHeap* minHeap) {
     return root;
 }
 
-void HPFScheduling(int ProcNum) {
+void HPFScheduling(int ProcNum, FILE* fptr, float *totalWTA, int *totalWait, int *totalUtil, float *WTA) {
     key_t key_id = ftok("keyfile", 65);
 
     int msgq_id = msgget(key_id, 0666 | IPC_CREAT);
@@ -137,6 +137,12 @@ void HPFScheduling(int ProcNum) {
                     clk, minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
                     clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT,
                     clk - minHeap->RUN->ArrivalT, (float)(clk - minHeap->RUN->ArrivalT) / minHeap->RUN->RunT);
+                    fprintf(fptr, "At time\t%d\tprocess\t%d\tfinished arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\tTA\t%d\tWTA\t%.2f\n",
+                    clk, minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
+                    clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT,
+                    clk - minHeap->RUN->ArrivalT, (float)(clk - minHeap->RUN->ArrivalT) / minHeap->RUN->RunT);
+                *totalWTA += (float)(clk - minHeap->RUN->ArrivalT) / minHeap->RUN->RunT;
+                *totalWait += clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT;
                 minHeap->RUN = NULL;
             }
         }
@@ -151,7 +157,14 @@ void HPFScheduling(int ProcNum) {
                 printf("At time\t%d\tprocess\t%d\tstarted  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
                        minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
                        clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT);
+                fprintf(fptr, "At time\t%d\tprocess\t%d\tstarted  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
+                       minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
+                       clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT);
             }
+        }
+        if (minHeap->RUN != NULL)
+        {
+            (*totalUtil)++;
         }
         // Wait until the clock time changes
         while (clk == getClk()) {

@@ -81,7 +81,7 @@ int MinTime(struct MinHeap* minHeap) {
     return minHeap->array[0]->RemT;
 }
 
-void SRTNScheduling(int ProcNum) {
+void SRTNScheduling(int ProcNum, FILE* fptr, float *totalWTA, int *totalWait, int *totalUtil, float *WTA) {
     key_t key_id = ftok("keyfile", 65);
 
     int msgq_id = msgget(key_id, 0666 | IPC_CREAT);
@@ -148,6 +148,9 @@ void SRTNScheduling(int ProcNum) {
                         printf("At time\t%d\tprocess\t%d\tstopped  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
                                minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
                                clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT);
+                        fprintf(fptr, "At time\t%d\tprocess\t%d\tstopped  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
+                               minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
+                               clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT);
                         insertProcessSRTN(minHeap, minHeap->RUN);
                         minHeap->RUN = NULL;
                     }
@@ -161,6 +164,13 @@ void SRTNScheduling(int ProcNum) {
                         clk, minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
                         clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT,
                         clk - minHeap->RUN->ArrivalT, (float)(clk - minHeap->RUN->ArrivalT) / minHeap->RUN->RunT);
+                    fprintf(fptr, "At time\t%d\tprocess\t%d\tfinished "
+                        "arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\tTA\t%d\tWTA\t%.2f\n",
+                        clk, minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
+                        clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT,
+                        clk - minHeap->RUN->ArrivalT, (float)(clk - minHeap->RUN->ArrivalT) / minHeap->RUN->RunT);
+                    *totalWTA += (float)(clk - minHeap->RUN->ArrivalT) / minHeap->RUN->RunT;
+                    *totalWait += clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT;
                     minHeap->RUN = NULL;
                 }
             }
@@ -173,6 +183,9 @@ void SRTNScheduling(int ProcNum) {
                 printf("At time\t%d\tprocess\t%d\tresumed  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
                        minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
                        clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT);
+                fprintf(fptr, "At time\t%d\tprocess\t%d\tresumed  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
+                       minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
+                       clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT);       
             }
             // Update the start time if necessary
             if (minHeap->RUN->StartT == -1) {
@@ -180,7 +193,14 @@ void SRTNScheduling(int ProcNum) {
                 printf("At time\t%d\tprocess\t%d\tstarted  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
                        minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
                        clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT);
+                fprintf(fptr, "At time\t%d\tprocess\t%d\tstarted  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
+                       minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
+                       clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT);
             }
+        }
+        if (minHeap->RUN != NULL)
+        {
+            (*totalUtil)++;
         }
         while (clk == getClk()) {
         }
