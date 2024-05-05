@@ -72,6 +72,8 @@ struct Process *extractMinHPF(struct MinHeap *minHeap) {
 }
 
 void HPFScheduling(int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, int *totalUtil, float *WTA) {
+    struct MinBLK *BLK = (struct MinBLK *)malloc(ProcNum * sizeof(struct MinBLK));
+
     key_t key_id = ftok("keyfile", 65);
 
     int msgq_id = msgget(key_id, 0666 | IPC_CREAT);

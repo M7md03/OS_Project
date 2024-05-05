@@ -88,7 +88,7 @@ struct MinHeap {
     struct Process *RUN;
 };
 
-struct BLK {
+struct MinBLK {
     struct Process **array;  // Array of pointers to Process structs
     int size;
     int capacity;
@@ -99,16 +99,16 @@ struct BLK {
  *
  * @return a pointer to the newly created min heap, or NULL if memory allocation fails
  */
-struct BLK *MinHeap(int c) {
-    struct BLK *blk = (struct BLK *)malloc(sizeof(struct BLK));  // Dynamically allocate a min heap
-    blk->capacity = c;                                           // Initial capacity
+struct MinBLK *MinHeap(int c) {
+    struct MinBLK *blk = (struct MinBLK *)malloc(sizeof(struct MinBLK));  // Dynamically allocate a min heap
+    blk->capacity = c;                                                    // Initial capacity
     blk->size = 0;
     blk->array = (struct Process **)malloc(
         blk->capacity * sizeof(struct Process *));  // Dynamically allocate memory for the array of pointers
     return blk;
 }
 
-void minHeapifyBLK(struct BLK *blk, int i) {
+void minHeapifyBLK(struct MinBLK *blk, int i) {
     int smallest = i;
     int left = 2 * i + 1;
     int right = 2 * i + 2;
@@ -129,7 +129,7 @@ void minHeapifyBLK(struct BLK *blk, int i) {
     }
 }
 
-void insertProcessBLK(struct BLK *blk, struct Process *p) {
+void insertProcessBLK(struct MinBLK *blk, struct Process *p) {
     int i = blk->size;
     blk->size++;
     blk->array[i] = p;
@@ -143,12 +143,12 @@ void insertProcessBLK(struct BLK *blk, struct Process *p) {
     }
 }
 
-int MinSize(struct BLK *blk) {
+int MinSize(struct MinBLK *blk) {
     if (blk->size == 0) return -1;
     return blk->array[0]->MemSize;
 }
 
-struct Process *extractMinBLK(struct BLK *blk) {
+struct Process *extractMinBLK(struct MinBLK *blk) {
     if (blk->size == 0) return NULL;
     if (blk->size == 1) {
         blk->size--;
@@ -164,7 +164,7 @@ struct Process *extractMinBLK(struct BLK *blk) {
     return root;
 }
 
-void FreeBLK(struct BLK *blk) {
+void FreeBLK(struct MinBLK *blk) {
     free(blk->array);
     free(blk);
 }

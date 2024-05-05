@@ -116,6 +116,8 @@ void FreeRoundRobin(struct RoundRobin *rr) {
  * @param ProcNum The number of processes to be scheduled.
  */
 void RoundRobinScheduling(int q, int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, int *totalUtil, float *WTA) {
+    struct MinBLK *BLK = (struct MinBLK *)malloc(ProcNum * sizeof(struct MinBLK));
+
     struct Process *Proc = (struct Process *)malloc(ProcNum * sizeof(struct Process));
     // Create a RoundRobin struct
     struct RoundRobin *rr = createRoundRobin(q, ProcNum);
