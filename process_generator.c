@@ -112,9 +112,6 @@ int main(void) {
                 break;
             }
         }
-        if (Processes[Count] == NULL) {
-            break;
-        }
         while (clk == getClk()) {
         }
     }
