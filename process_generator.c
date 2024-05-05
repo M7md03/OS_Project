@@ -43,11 +43,11 @@ int main(void) {
     Processes = (struct Process **)malloc((NumberOfProcesses + 1) * sizeof(struct Process *));
     skipLine(fptr);
 
-    int Id, At, Rt, Pr;
+    int Id, At, Rt, Pr, mem;
     for (int i = 0; i < NumberOfProcesses; i++) {
         Processes[i] = (struct Process *)malloc(sizeof(struct Process));
-        fscanf(fptr, "%d\t%d\t%d\t%d", &Id, &At, &Rt, &Pr);
-        Processes[i] = Process(Id, At, Rt, Pr);
+        fscanf(fptr, "%d\t%d\t%d\t%d\t%d", &Id, &At, &Rt, &Pr, &mem);
+        Processes[i] = Process(Id, At, Rt, Pr, mem);
     }
     Processes[NumberOfProcesses] = NULL;
     printf("the number of processses is %d \n", NumberOfProcesses);
