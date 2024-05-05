@@ -5,8 +5,7 @@
 
 void PrintPerf(FILE *fout, float util, float totalWTA, int totalWait, int ProcNum, float *WTA);
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     int Alg = atoi(argv[1]);
     int ProcNum = atoi(argv[2]);
     int Quantum = atoi(argv[3]);
@@ -19,26 +18,19 @@ int main(int argc, char *argv[])
     int totalUtil = 0;
     float *WTA = (float *)malloc(ProcNum * sizeof(float));
 
-    if (fptr == NULL)
-    {
+    if (fptr == NULL) {
         printf("Unable to open the log file.");
     }
-    if (fout == NULL)
-    {
+    if (fout == NULL) {
         printf("Unable to open the perf file.");
     }
 
     initClk();
-    if (Alg == HPF)
-    {
+    if (Alg == HPF) {
         HPFScheduling(ProcNum, fptr, &totalWTA, &totalWait, &totalUtil, WTA);
-    }
-    else if (Alg == SRTN)
-    {
+    } else if (Alg == SRTN) {
         SRTNScheduling(ProcNum, fptr, &totalWTA, &totalWait, &totalUtil, WTA);
-    }
-    else if (Alg == RR)
-    {
+    } else if (Alg == RR) {
         RoundRobinScheduling(Quantum, ProcNum, fptr, &totalWTA, &totalWait, &totalUtil, WTA);
     }
 
@@ -56,14 +48,12 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void PrintPerf(FILE *fout, float util, float totalWTA, int totalWait, int ProcNum, float *WTA)
-{
+void PrintPerf(FILE *fout, float util, float totalWTA, int totalWait, int ProcNum, float *WTA) {
     double sum = 0.0;
     fprintf(fout, "CPU utitilization = %.2f%%\n", util);
     fprintf(fout, "Avg WTA = %.2f\n", totalWTA / ProcNum);
     fprintf(fout, "Avg Waiting = %.2f\n", (float)totalWait / ProcNum);
-    for (int i = 0; i < ProcNum; i++)
-    {
+    for (int i = 0; i < ProcNum; i++) {
         sum += (WTA[i] - totalWTA / ProcNum) * (WTA[i] - totalWTA / ProcNum);
     }
     fprintf(fout, "Std WTA = %.2f\n", sqrt(sum / ProcNum));
