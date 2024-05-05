@@ -179,6 +179,8 @@ void HPFScheduling(int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, int
     }
     // Free the allocated memory
     FreeMin(minHeap);
+    free(Proc);
+    free(BLK);
 }
 
 #endif

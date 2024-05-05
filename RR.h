@@ -259,5 +259,7 @@ void RoundRobinScheduling(int q, int ProcNum, FILE *fptr, float *totalWTA, int *
     }
     // Free the allocated memory
     FreeRoundRobin(rr);
+    free(Proc);
+    free(BLK);
 }
 #endif

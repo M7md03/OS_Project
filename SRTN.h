@@ -213,5 +213,7 @@ void SRTNScheduling(int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, in
     }
     // Free the allocated memory
     FreeMin(minHeap);
+    free(Proc);
+    free(BLK);
 }
 #endif
