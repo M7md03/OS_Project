@@ -1,6 +1,6 @@
 {
     "files.associations": {
-        "array": "c",
-        "cerrno": "c"
+        "*.c": "c",
+        "memory.h": "c"
     }
 }
