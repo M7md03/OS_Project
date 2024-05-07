@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "*.c": "c",
-        "memory.h": "c"
+        "memory.h": "c",
+        "memory_resource": "c"
     }
 }

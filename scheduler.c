@@ -26,6 +26,7 @@ int main(int argc, char *argv[]) {
     }
 
     initClk();
+    
     if (Alg == HPF) {
         HPFScheduling(ProcNum, fptr, &totalWTA, &totalWait, &totalUtil, WTA);
     } else if (Alg == SRTN) {

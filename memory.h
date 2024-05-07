@@ -1,6 +1,7 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 #include "headers.h"
+#include <math.h>
 
 #define MaxSize 1024
 
@@ -25,9 +26,8 @@ MemoryNode;
 struct MemoryNode* createMemoryNode(int size, struct MemoryNode* parent, int start_address) ;
 void deallocateMemory(MemoryNode* node);
 struct MemoryNode* allocate(int sizep, struct MemoryNode * root);
-struct MemoryNode* dfs_recursive(int sizeOfP, struct MemoryNode * root);
-
-
+int get_block_size(int size);
+void PreorderTraverse(MemoryNode *root);
 
 
 
