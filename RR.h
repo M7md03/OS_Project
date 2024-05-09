@@ -115,8 +115,8 @@ void FreeRoundRobin(struct RoundRobin *rr) {
  * @param q The time quantum for each process.
  * @param ProcNum The number of processes to be scheduled.
  */
-void RoundRobinScheduling(int q, int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, int *totalUtil, float *WTA, FILE *memlog) 
-{
+void RoundRobinScheduling(int q, int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, int *totalUtil, float *WTA,
+                          FILE *memlog) {
     struct MinBLK *BLK = (struct MinBLK *)malloc(ProcNum * sizeof(struct MinBLK));
 
     struct MemoryNode *root = createMemoryNode(MaxSize, NULL, 0);
@@ -180,18 +180,13 @@ void RoundRobinScheduling(int q, int ProcNum, FILE *fptr, float *totalWTA, int *
                 Proc[g].MyMemory = allocate(Proc[g].MemSize, root);
                 if (Proc[g].MyMemory == NULL) {
                     insertProcessBLK(BLK, &Proc[g]);
-                } 
-                else 
-                {   //printing in memory.log the allocated memory
-                    printf(
-                        "At time\t%d\tallocated\t%d\tbytes for process\t%d\tfrom\t%d\tto\t%d\n",
-                        clk, Proc[g].MemSize ,Proc[g].ID, Proc[g].MyMemory->block.start_address, 
-                        Proc[g].MyMemory->block.end_address );
-                    fprintf(
-                        memlog,
-                        "At time\t%d\tallocated\t%d\tbytes for process\t%d\tfrom\t%d\tto\t%d\n",
-                        clk, Proc[g].MemSize ,Proc[g].ID, Proc[g].MyMemory->block.start_address, 
-                        Proc[g].MyMemory->block.end_address );
+                } else {  // printing in memory.log the allocated memory
+                    printf("At time\t%d\tallocated\t%d\tbytes for process\t%d\tfrom\t%d\tto\t%d\n", clk,
+                           Proc[g].MemSize, Proc[g].ID, Proc[g].MyMemory->block.start_address,
+                           Proc[g].MyMemory->block.end_address);
+                    fprintf(memlog, "At time\t%d\tallocated\t%d\tbytes for process\t%d\tfrom\t%d\tto\t%d\n", clk,
+                            Proc[g].MemSize, Proc[g].ID, Proc[g].MyMemory->block.start_address,
+                            Proc[g].MyMemory->block.end_address);
                     enqueue(rr, &Proc[g]);
                 }
                 g++;
@@ -240,16 +235,13 @@ void RoundRobinScheduling(int q, int ProcNum, FILE *fptr, float *totalWTA, int *
                     *totalWait += clk - rr->RUN->ArrivalT - rr->RUN->RunT;
                     WTA[i] = (float)(clk - rr->RUN->ArrivalT) / rr->RUN->RunT;
                     i++;
-                    //printing in memory.log the freed memory
-                    printf(
-                    "At time\t%d\tfreed\t%d\tbytes from process\t%d\tfrom\t%d\tto\t%d\n",
-                    clk, rr->RUN->MemSize ,rr->RUN->ID, rr->RUN->MyMemory->block.start_address, 
-                    rr->RUN->MyMemory->block.end_address);
-                    fprintf(
-                        memlog,
-                        "At time\t%d\tfreed\t%d\tbytes from process\t%d\tfrom\t%d\tto\t%d\n",
-                        clk, rr->RUN->MemSize ,rr->RUN->ID, rr->RUN->MyMemory->block.start_address, 
-                        rr->RUN->MyMemory->block.end_address);
+                    // printing in memory.log the freed memory
+                    printf("At time\t%d\tfreed\t\t%d\tbytes from process\t%d\tfrom\t%d\tto\t%d\n", clk,
+                           rr->RUN->MemSize, rr->RUN->ID, rr->RUN->MyMemory->block.start_address,
+                           rr->RUN->MyMemory->block.end_address);
+                    fprintf(memlog, "At time\t%d\tfreed\t\t%d\tbytes from process\t%d\tfrom\t%d\tto\t%d\n", clk,
+                            rr->RUN->MemSize, rr->RUN->ID, rr->RUN->MyMemory->block.start_address,
+                            rr->RUN->MyMemory->block.end_address);
                     deallocateMemory(rr->RUN->MyMemory);
                     rr->RUN = NULL;
                 }
@@ -287,18 +279,12 @@ void RoundRobinScheduling(int q, int ProcNum, FILE *fptr, float *totalWTA, int *
         if (!isEmptyBLK(BLK)) {
             p = extractMinBLK(BLK);
             p->MyMemory = allocate(p->MemSize, root);
-            if (p->MyMemory != NULL) 
-            {
-                //printing in memory.log the allocated memory
-                printf(
-                    "At time\t%d\tallocated\t%d\tbytes for process\t%d\tfrom\t%d\tto\t%d\n",
-                    clk, p->MemSize ,p->ID, p->MyMemory->block.start_address, 
-                    p->MyMemory->block.end_address );
-                fprintf(
-                    memlog,
-                    "At time\t%d\tallocated\t%d\tbytes for process\t%d\tfrom\t%d\tto\t%d\n",
-                    clk, p->MemSize ,p->ID, p->MyMemory->block.start_address, 
-                    p->MyMemory->block.end_address ); 
+            if (p->MyMemory != NULL) {
+                // printing in memory.log the allocated memory
+                printf("At time\t%d\tallocated\t%d\tbytes for process\t%d\tfrom\t%d\tto\t%d\n", clk, p->MemSize, p->ID,
+                       p->MyMemory->block.start_address, p->MyMemory->block.end_address);
+                fprintf(memlog, "At time\t%d\tallocated\t%d\tbytes for process\t%d\tfrom\t%d\tto\t%d\n", clk,
+                        p->MemSize, p->ID, p->MyMemory->block.start_address, p->MyMemory->block.end_address);
                 enqueue(rr, p);
             } else {
                 insertProcessBLK(BLK, p);
