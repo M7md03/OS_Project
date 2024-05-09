@@ -38,6 +38,7 @@ struct Process {
     int EndT;      // End Time
     int P;         // Priority
     int MemSize;   // Memory Size
+    MemoryNode* MyMemory; 
 };
 
 /**
@@ -69,6 +70,7 @@ struct Process *Process(int id, int at, int rt, int pr, int mem) {
     p->RemT = rt;      // Set Remaining Time
     p->P = pr;         // Set Priority
     p->MemSize = mem;  // Set Memory Size
+    p->MyMemory = NULL;// no memory allocated yet
     return p;
 }
 
