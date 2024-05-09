@@ -120,7 +120,6 @@ void HPFScheduling(int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, int
                 }
                 Proc[g].pid = pid;
                 // Update the process ID and enqueue it
-                kill(pid, SIGSTOP);
                 kill(Proc[g].pid, SIGSTOP);
                 Proc[g].MyMemory = allocate(Proc[g].MemSize, root);
                 if (Proc[g].MyMemory == NULL) {
