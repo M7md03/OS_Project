@@ -84,6 +84,8 @@ int MinTime(struct MinHeap *minHeap) {
 void SRTNScheduling(int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, int *totalUtil, float *WTA) {
     struct MinBLK *BLK = (struct MinBLK *)malloc(ProcNum * sizeof(struct MinBLK));
 
+    struct MemoryNode *root = createMemoryNode(MaxSize, NULL, 0);
+
     key_t key_id = ftok("keyfile", 65);
 
     int msgq_id = msgget(key_id, 0666 | IPC_CREAT);
@@ -127,6 +129,12 @@ void SRTNScheduling(int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, in
                     }
                 }
                 Proc[g].pid = pid;
+                Proc[g].MyMemory = allocate(Proc[g].MemSize, root);
+                if (Proc[g].MyMemory == NULL) {
+                    insertProcessBLK(BLK, &Proc[g]);
+                } else {
+                    insertProcessHPF(minHeap, &Proc[g]);
+                }
                 // printf("#%d  Process %d Recieved, ArivT: %d, RunT: %d, P: %d, PID: %d\n", clk, Proc[g].ID,
                 //        Proc[g].ArrivalT, Proc[g].RunT, Proc[g].P, Proc[g].pid);
 
@@ -177,6 +185,7 @@ void SRTNScheduling(int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, in
                     *totalWait += clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT;
                     WTA[i] = (float)(clk - minHeap->RUN->ArrivalT) / minHeap->RUN->RunT;
                     i++;
+                    deallocateMemory(minHeap->RUN->MyMemory);
                     minHeap->RUN = NULL;
                 }
             }
@@ -207,6 +216,16 @@ void SRTNScheduling(int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, in
         if (minHeap->RUN != NULL) {
             (*totalUtil)++;
             // printf("totalutil = %d\n", *totalUtil);
+        }
+        struct Process *p;
+        if (!isEmptyBLK(BLK)) {
+            p = extractMinBLK(BLK);
+            p->MyMemory = allocate(p->MemSize, root);
+            if (p->MyMemory != NULL) {
+                insertProcessHPF(minHeap, &Proc[g]);
+            } else {
+                insertProcessBLK(BLK, p);
+            }
         }
         while (clk == getClk()) {
         }
