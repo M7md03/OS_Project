@@ -74,6 +74,8 @@ struct Process *extractMinHPF(struct MinHeap *minHeap) {
 void HPFScheduling(int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, int *totalUtil, float *WTA) {
     struct MinBLK *BLK = (struct MinBLK *)malloc(ProcNum * sizeof(struct MinBLK));
 
+    struct MemoryNode *root = createMemoryNode(MaxSize, NULL, 0);
+
     key_t key_id = ftok("keyfile", 65);
 
     int msgq_id = msgget(key_id, 0666 | IPC_CREAT);
@@ -119,7 +121,13 @@ void HPFScheduling(int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, int
                 Proc[g].pid = pid;
                 // Update the process ID and enqueue it
                 kill(pid, SIGSTOP);
-                insertProcessHPF(minHeap, &Proc[g]);
+                kill(Proc[g].pid, SIGSTOP);
+                Proc[g].MyMemory = allocate(Proc[g].MemSize, root);
+                if (Proc[g].MyMemory == NULL) {
+                    insertProcessBLK(BLK, &Proc[g]);
+                } else {
+                    insertProcessHPF(minHeap, &Proc[g]);
+                }
                 g++;
             } else {
                 break;
@@ -150,6 +158,7 @@ void HPFScheduling(int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, int
                 *totalWait += clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT;
                 WTA[i] = (float)(clk - minHeap->RUN->ArrivalT) / minHeap->RUN->RunT;
                 i++;
+                deallocateMemory(minHeap->RUN->MyMemory);
                 minHeap->RUN = NULL;
             }
         }
@@ -172,6 +181,16 @@ void HPFScheduling(int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, int
         if (minHeap->RUN != NULL) {
             (*totalUtil)++;
             // printf("totalutil = %d\n", *totalUtil);
+        }
+        struct Process *p;
+        if (!isEmptyBLK(BLK)) {
+            p = extractMinBLK(BLK);
+            p->MyMemory = allocate(p->MemSize, root);
+            if (p->MyMemory != NULL) {
+                insertProcessHPF(minHeap, &Proc[g]);
+            } else {
+                insertProcessBLK(BLK, p);
+            }
         }
         // Wait until the clock time changes
         while (clk == getClk()) {

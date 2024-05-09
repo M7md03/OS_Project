@@ -45,6 +45,7 @@ int main(int argc, char *argv[]) {
     fclose(fptr);
     fclose(fout);
     printf("Scheduler Terminated\n");
+    free(WTA);
     destroyClk(false);
     return 0;
 }

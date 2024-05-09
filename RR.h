@@ -228,6 +228,7 @@ void RoundRobinScheduling(int q, int ProcNum, FILE *fptr, float *totalWTA, int *
                     *totalWait += clk - rr->RUN->ArrivalT - rr->RUN->RunT;
                     WTA[i] = (float)(clk - rr->RUN->ArrivalT) / rr->RUN->RunT;
                     i++;
+                    deallocateMemory(rr->RUN->MyMemory);
                     rr->RUN = NULL;
                 }
                 rr->runQuantum = rr->quantum;
