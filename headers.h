@@ -95,11 +95,23 @@ struct MinBLK {
 };
 
 /**
+ * Swaps two elements in an array.
+ *
+ * @param a a pointer to the first element
+ * @param b a pointer to the second element
+ */
+void swap(struct Process **a, struct Process **b) {
+    struct Process *temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+/**
  * Creates a new min heap data structure.
  *
  * @return a pointer to the newly created min heap, or NULL if memory allocation fails
  */
-struct MinBLK *MinHeap(int c) {
+struct MinBLK *MinHeapBLK(int c) {
     struct MinBLK *blk = (struct MinBLK *)malloc(sizeof(struct MinBLK));  // Dynamically allocate a min heap
     blk->capacity = c;                                                    // Initial capacity
     blk->size = 0;
@@ -184,18 +196,6 @@ struct MinHeap *MinHeap(int c) {
 
 bool isEmptyMin(struct MinHeap *minHeap) { return minHeap->size == 0; }
 
-/**
- * Swaps two elements in an array.
- *
- * @param a a pointer to the first element
- * @param b a pointer to the second element
- */
-void swap(struct Process **a, struct Process **b) {
-    struct Process *temp = *a;
-    *a = *b;
-    *b = temp;
-}
-
 void FreeMin(struct MinHeap *minHeap) {
     free(minHeap->array);
     free(minHeap);
@@ -240,4 +240,3 @@ void destroyClk(bool terminateAll) {
 }
 
 #endif
-
