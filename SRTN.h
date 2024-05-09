@@ -81,7 +81,7 @@ int MinTime(struct MinHeap *minHeap) {
     return minHeap->array[0]->RemT;
 }
 
-void SRTNScheduling(int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, int *totalUtil, float *WTA) {
+void SRTNScheduling(int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, int *totalUtil, float *WTA, FILE *memlog) {
     struct MinBLK *BLK = (struct MinBLK *)malloc(ProcNum * sizeof(struct MinBLK));
 
     struct MemoryNode *root = createMemoryNode(MaxSize, NULL, 0);
@@ -132,7 +132,19 @@ void SRTNScheduling(int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, in
                 Proc[g].MyMemory = allocate(Proc[g].MemSize, root);
                 if (Proc[g].MyMemory == NULL) {
                     insertProcessBLK(BLK, &Proc[g]);
-                } else {
+                } 
+                else 
+                {
+                    //printing in memory.log the allocated memory
+                    printf(
+                        "At time\t%d\tallocated\t%d\tbytes for process\t%d\tfrom\t%d\tto\t%d\n",
+                        clk, Proc[g].MemSize ,Proc[g].ID, Proc[g].MyMemory->block.start_address, 
+                        Proc[g].MyMemory->block.end_address);
+                    fprintf(
+                        memlog,
+                        "At time\t%d\tallocated\t%d\tbytes for process\t%d\tfrom\t%d\tto\t%d\n",
+                        clk, Proc[g].MemSize ,Proc[g].ID, Proc[g].MyMemory->block.start_address, 
+                        Proc[g].MyMemory->block.end_address);   
                     insertProcessHPF(minHeap, &Proc[g]);
                 }
                 // printf("#%d  Process %d Recieved, ArivT: %d, RunT: %d, P: %d, PID: %d\n", clk, Proc[g].ID,
@@ -185,6 +197,16 @@ void SRTNScheduling(int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, in
                     *totalWait += clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT;
                     WTA[i] = (float)(clk - minHeap->RUN->ArrivalT) / minHeap->RUN->RunT;
                     i++;
+                    //printing in memory.log the freed memory
+                    printf(
+                    "At time\t%d\tfreed\t%d\tbytes from process\t%d\tfrom\t%d\tto\t%d\n",
+                    clk, minHeap->RUN->MemSize ,minHeap->RUN->ID, minHeap->RUN->MyMemory->block.start_address, 
+                    minHeap->RUN->MyMemory->block.end_address);
+                    fprintf(
+                        memlog,
+                        "At time\t%d\tfreed\t%d\tbytes from process\t%d\tfrom\t%d\tto\t%d\n",
+                        clk, minHeap->RUN->MemSize ,minHeap->RUN->ID, minHeap->RUN->MyMemory->block.start_address, 
+                        minHeap->RUN->MyMemory->block.end_address);
                     deallocateMemory(minHeap->RUN->MyMemory);
                     minHeap->RUN = NULL;
                 }
@@ -221,7 +243,18 @@ void SRTNScheduling(int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, in
         if (!isEmptyBLK(BLK)) {
             p = extractMinBLK(BLK);
             p->MyMemory = allocate(p->MemSize, root);
-            if (p->MyMemory != NULL) {
+            if (p->MyMemory != NULL) 
+            {
+                //printing in memory.log the allocated memory
+                printf(
+                    "At time\t%d\tallocated\t%d\tbytes for process\t%d\tfrom\t%d\tto\t%d\t",
+                    clk, p->MemSize ,p->ID, p->MyMemory->block.start_address, 
+                    p->MyMemory->block.end_address );
+                fprintf(
+                    memlog,
+                    "At time\t%d\tallocated\t%d\tbytes for process\t%d\tfrom\t%d\tto\t%d\t",
+                    clk, p->MemSize ,p->ID, p->MyMemory->block.start_address, 
+                    p->MyMemory->block.end_address );
                 insertProcessHPF(minHeap, &Proc[g]);
             } else {
                 insertProcessBLK(BLK, p);
