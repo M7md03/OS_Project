@@ -184,12 +184,12 @@ void RoundRobinScheduling(int q, int ProcNum, FILE *fptr, float *totalWTA, int *
                 else 
                 {   //printing in memory.log the allocated memory
                     printf(
-                        "At time\t%d\tallocated\t%d\tbytes for process\t%d\tfrom\t%d\tto\t%d\t",
+                        "At time\t%d\tallocated\t%d\tbytes for process\t%d\tfrom\t%d\tto\t%d\n",
                         clk, Proc[g].MemSize ,Proc[g].ID, Proc[g].MyMemory->block.start_address, 
                         Proc[g].MyMemory->block.end_address );
-                    printf(
+                    fprintf(
                         memlog,
-                        "At time\t%d\tallocated\t%d\tbytes for process\t%d\tfrom\t%d\tto\t%d\t",
+                        "At time\t%d\tallocated\t%d\tbytes for process\t%d\tfrom\t%d\tto\t%d\n",
                         clk, Proc[g].MemSize ,Proc[g].ID, Proc[g].MyMemory->block.start_address, 
                         Proc[g].MyMemory->block.end_address );
                     enqueue(rr, &Proc[g]);
