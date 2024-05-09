@@ -283,10 +283,10 @@ struct MemoryNode *allocate(int Psize, struct MemoryNode *root) {
                     // create children
                     root->left_child = createMemoryNode(half, root, root->block.start_address);
                     root->right_child = createMemoryNode(half, root, (root->left_child->block.end_address) + 1);
-                    printf("creating left and right children\n");
+                    //printf("creating left and right children\n");
                     if (half / 2 == Psize) {
                         root->left_child->used = 1;
-                        printf("Allocating in created left child\n");
+                        //printf("Allocating in created left child\n");
                         return root->left_child;
                     } else {
                         MemoryNode *left_result = allocate(Psize, root->left_child);
@@ -299,12 +299,12 @@ struct MemoryNode *allocate(int Psize, struct MemoryNode *root) {
                     MemoryNode *left_result = allocate(Psize, root->left_child);
                     if (left_result != NULL) {
                         left_result->used = 1;
-                        printf("Allocated in existing LEFT child \n");
+                        //printf("Allocated in existing LEFT child \n");
                         return left_result;
                     } else {
                         MemoryNode *right_result = allocate(Psize, root->right_child);
                         if (right_result != NULL) {
-                            printf("Allocated in existing RIGHT child \n");
+                            //printf("Allocated in existing RIGHT child \n");
                             right_result->used = 1;
                             return right_result;
                         }
@@ -337,14 +337,14 @@ void deallocateMemory(struct MemoryNode *node)  // Function to deallocate memory
         {
             if (parent->left_child == node) {
                 parent->left_child->used = 0;
-                printf("FREEING MEMORY FROM %d to %d \n", parent->left_child->block.start_address,
-                       parent->left_child->block.end_address);
+                //printf("FREEING MEMORY FROM %d to %d \n", parent->left_child->block.start_address,
+                //       parent->left_child->block.end_address);
                 if (parent->right_child != NULL)  // right child is free
                 {
                     if (parent->right_child->left_child == NULL && parent->right_child->right_child == NULL &&
                         parent->right_child->used == 0) {
-                        printf("FREEING MEMORY FROM %d to %d \n", parent->right_child->block.start_address,
-                               parent->right_child->block.end_address);
+                        //printf("FREEING MEMORY FROM %d to %d \n", parent->right_child->block.start_address,
+                        //       parent->right_child->block.end_address);
                         free(parent->right_child);
                         free(parent->left_child);
                         parent->right_child = NULL;
@@ -355,14 +355,14 @@ void deallocateMemory(struct MemoryNode *node)  // Function to deallocate memory
                 return;
             } else if (parent->right_child == node) {
                 parent->right_child->used = 0;  // the node is the right child
-                printf("FREEING MEMORY FROM %d to %d \n", parent->right_child->block.start_address,
-                       parent->right_child->block.end_address);
+                //printf("FREEING MEMORY FROM %d to %d \n", parent->right_child->block.start_address,
+                //       parent->right_child->block.end_address);
                 if (parent->left_child != NULL)  // left child is free
                 {
                     if (parent->left_child->left_child == NULL && parent->left_child->right_child == NULL &&
                         parent->left_child->used == 0) {
-                        printf("FREEING MEMORY FROM %d to %d \n", parent->left_child->block.start_address,
-                               parent->left_child->block.end_address);
+                        // printf("FREEING MEMORY FROM %d to %d \n", parent->left_child->block.start_address,
+                        //        parent->left_child->block.end_address);
                         free(parent->left_child);
                         free(parent->right_child);
                         parent->left_child = NULL;

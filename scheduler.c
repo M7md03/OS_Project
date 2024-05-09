@@ -12,6 +12,7 @@ int main(int argc, char *argv[]) {
 
     FILE *fptr = fopen("scheduler.log", "w");
     FILE *fout = fopen("scheduler.perf", "w");
+    FILE *MemLog = fopen("memory.log", "w");
 
     float totalWTA = 0.0;
     int totalWait = 0;
@@ -28,11 +29,11 @@ int main(int argc, char *argv[]) {
     initClk();
 
     if (Alg == HPF) {
-        HPFScheduling(ProcNum, fptr, &totalWTA, &totalWait, &totalUtil, WTA);
+        HPFScheduling(ProcNum, fptr, &totalWTA, &totalWait, &totalUtil, WTA , MemLog);
     } else if (Alg == SRTN) {
-        SRTNScheduling(ProcNum, fptr, &totalWTA, &totalWait, &totalUtil, WTA);
+        SRTNScheduling(ProcNum, fptr, &totalWTA, &totalWait, &totalUtil, WTA , MemLog);
     } else if (Alg == RR) {
-        RoundRobinScheduling(Quantum, ProcNum, fptr, &totalWTA, &totalWait, &totalUtil, WTA);
+        RoundRobinScheduling(Quantum, ProcNum, fptr, &totalWTA, &totalWait, &totalUtil, WTA, MemLog);
     }
 
     int clk = getClk() - 1;
@@ -44,6 +45,7 @@ int main(int argc, char *argv[]) {
 
     fclose(fptr);
     fclose(fout);
+    fclose(MemLog);
     printf("Scheduler Terminated\n");
     free(WTA);
     destroyClk(false);
