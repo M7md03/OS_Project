@@ -1,6 +1,8 @@
 {
     "files.associations": {
-        "array": "c",
-        "cerrno": "c"
+        "*.c": "c",
+        "memory.h": "c",
+        "memory_resource": "c",
+        "math.h": "c"
     }
 }

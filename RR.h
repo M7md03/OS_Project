@@ -118,6 +118,8 @@ void FreeRoundRobin(struct RoundRobin *rr) {
 void RoundRobinScheduling(int q, int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, int *totalUtil, float *WTA) {
     struct MinBLK *BLK = (struct MinBLK *)malloc(ProcNum * sizeof(struct MinBLK));
 
+    struct MemoryNode *root = createMemoryNode(MaxSize, NULL, 0);
+
     struct Process *Proc = (struct Process *)malloc(ProcNum * sizeof(struct Process));
     // Create a RoundRobin struct
     struct RoundRobin *rr = createRoundRobin(q, ProcNum);
@@ -174,7 +176,12 @@ void RoundRobinScheduling(int q, int ProcNum, FILE *fptr, float *totalWTA, int *
                 Proc[g].pid = pid;
                 // Update the process ID and enqueue it
                 kill(Proc[g].pid, SIGSTOP);
-                enqueue(rr, &Proc[g]);
+                Proc[g].MyMemory = allocate(Proc[g].MemSize, root);
+                if (Proc[g].MyMemory == NULL) {
+                    insertProcessBLK(BLK, &Proc[g]);
+                } else {
+                    enqueue(rr, &Proc[g]);
+                }
                 g++;
             } else {
                 break;
@@ -221,6 +228,7 @@ void RoundRobinScheduling(int q, int ProcNum, FILE *fptr, float *totalWTA, int *
                     *totalWait += clk - rr->RUN->ArrivalT - rr->RUN->RunT;
                     WTA[i] = (float)(clk - rr->RUN->ArrivalT) / rr->RUN->RunT;
                     i++;
+                    deallocateMemory(rr->RUN->MyMemory);
                     rr->RUN = NULL;
                 }
                 rr->runQuantum = rr->quantum;
@@ -252,6 +260,16 @@ void RoundRobinScheduling(int q, int ProcNum, FILE *fptr, float *totalWTA, int *
         if (rr->RUN != NULL) {
             (*totalUtil)++;
             // printf("totalutil = %d\n", *totalUtil);
+        }
+        struct Process *p;
+        if (!isEmptyBLK(BLK)) {
+            p = extractMinBLK(BLK);
+            p->MyMemory = allocate(p->MemSize, root);
+            if (p->MyMemory != NULL) {
+                enqueue(rr, p);
+            } else {
+                insertProcessBLK(BLK, p);
+            }
         }
         // Wait until the clock time changes
         while (clk == getClk()) {
