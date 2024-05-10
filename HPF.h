@@ -72,7 +72,7 @@ struct Process *extractMinHPF(struct MinHeap *minHeap) {
 }
 
 void HPFScheduling(int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, int *totalUtil, float *WTA, FILE *memlog) {
-    struct MinBLK *BLK = (struct MinBLK *)malloc(ProcNum * sizeof(struct MinBLK));
+    struct MinHeap *BLK = MinHeap(ProcNum);
 
     struct MemoryNode *root = createMemoryNode(MaxSize, NULL, 0);
 
@@ -196,7 +196,7 @@ void HPFScheduling(int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, int
             // printf("totalutil = %d\n", *totalUtil);
         }
         struct Process *p;
-        if (!isEmptyBLK(BLK)) {
+        if (!isEmptyMin(BLK)) {
             p = extractMinBLK(BLK);
             // allocate memory to process
             p->MyMemory = allocate(p->MemSize, root);

@@ -108,12 +108,6 @@ struct MinHeap {
     struct Process *RUN;
 };
 
-struct MinBLK {
-    struct Process **array;  // Array of pointers to Process structs
-    int size;
-    int capacity;
-};
-
 /**
  * Swaps two elements in an array.
  *
@@ -126,21 +120,7 @@ void swap(struct Process **a, struct Process **b) {
     *b = temp;
 }
 
-/**
- * Creates a new min heap data structure.
- *
- * @return a pointer to the newly created min heap, or NULL if memory allocation fails
- */
-struct MinBLK *MinHeapBLK(int c) {
-    struct MinBLK *blk = (struct MinBLK *)malloc(sizeof(struct MinBLK));  // Dynamically allocate a min heap
-    blk->capacity = c;                                                    // Initial capacity
-    blk->size = 0;
-    blk->array = (struct Process **)malloc(
-        blk->capacity * sizeof(struct Process *));  // Dynamically allocate memory for the array of pointers
-    return blk;
-}
-
-void minHeapifyBLK(struct MinBLK *blk, int i) {
+void minHeapifyBLK(struct MinHeap *blk, int i) {
     int smallest = i;
     int left = 2 * i + 1;
     int right = 2 * i + 2;
@@ -161,11 +141,10 @@ void minHeapifyBLK(struct MinBLK *blk, int i) {
     }
 }
 
-void insertProcessBLK(struct MinBLK *blk, struct Process *p) {
+void insertProcessBLK(struct MinHeap *blk, struct Process *p) {
     int i = blk->size;
     blk->size++;
     blk->array[i] = p;
-
     // Fix the min heap property if it is violated
     while (i != 0 && (blk->array[(i - 1) / 2]->MemSize > blk->array[i]->MemSize ||
                       (blk->array[(i - 1) / 2]->MemSize == blk->array[i]->MemSize &&
@@ -175,14 +154,7 @@ void insertProcessBLK(struct MinBLK *blk, struct Process *p) {
     }
 }
 
-bool isEmptyBLK(struct MinBLK *blk) { return blk->size == 0; }
-
-int MinSize(struct MinBLK *blk) {
-    if (blk->size == 0) return -1;
-    return blk->array[0]->MemSize;
-}
-
-struct Process *extractMinBLK(struct MinBLK *blk) {
+struct Process *extractMinBLK(struct MinHeap *blk) {
     if (blk->size == 0) return NULL;
     if (blk->size == 1) {
         blk->size--;
@@ -198,7 +170,12 @@ struct Process *extractMinBLK(struct MinBLK *blk) {
     return root;
 }
 
-void FreeBLK(struct MinBLK *blk) {
+int MinSize(struct MinHeap *blk) {
+    if (blk->size == 0) return -1;
+    return blk->array[0]->MemSize;
+}
+
+void FreeBLK(struct MinHeap *blk) {
     free(blk->array);
     free(blk);
 }
@@ -276,17 +253,17 @@ struct MemoryNode *allocate(int Psize, struct MemoryNode *root) {
         if (root->used == 0) {
             int num = root->size;
             int half = num / 2;
-            if (Psize < half)  // don't place in root
+            if (Psize <= half)  // don't place in root
             {
                 if (root->left_child == NULL && root->right_child == NULL)  // if root has no children
                 {
                     // create children
                     root->left_child = createMemoryNode(half, root, root->block.start_address);
                     root->right_child = createMemoryNode(half, root, (root->left_child->block.end_address) + 1);
-                    //printf("creating left and right children\n");
+                    // printf("creating left and right children\n");
                     if (half / 2 == Psize) {
                         root->left_child->used = 1;
-                        //printf("Allocating in created left child\n");
+                        // printf("Allocating in created left child\n");
                         return root->left_child;
                     } else {
                         MemoryNode *left_result = allocate(Psize, root->left_child);
@@ -299,12 +276,12 @@ struct MemoryNode *allocate(int Psize, struct MemoryNode *root) {
                     MemoryNode *left_result = allocate(Psize, root->left_child);
                     if (left_result != NULL) {
                         left_result->used = 1;
-                        //printf("Allocated in existing LEFT child \n");
+                        // printf("Allocated in existing LEFT child \n");
                         return left_result;
                     } else {
                         MemoryNode *right_result = allocate(Psize, root->right_child);
                         if (right_result != NULL) {
-                            //printf("Allocated in existing RIGHT child \n");
+                            // printf("Allocated in existing RIGHT child \n");
                             right_result->used = 1;
                             return right_result;
                         }
@@ -337,14 +314,14 @@ void deallocateMemory(struct MemoryNode *node)  // Function to deallocate memory
         {
             if (parent->left_child == node) {
                 parent->left_child->used = 0;
-                //printf("FREEING MEMORY FROM %d to %d \n", parent->left_child->block.start_address,
-                //       parent->left_child->block.end_address);
+                // printf("FREEING MEMORY FROM %d to %d \n", parent->left_child->block.start_address,
+                //        parent->left_child->block.end_address);
                 if (parent->right_child != NULL)  // right child is free
                 {
                     if (parent->right_child->left_child == NULL && parent->right_child->right_child == NULL &&
                         parent->right_child->used == 0) {
-                        //printf("FREEING MEMORY FROM %d to %d \n", parent->right_child->block.start_address,
-                        //       parent->right_child->block.end_address);
+                        // printf("FREEING MEMORY FROM %d to %d \n", parent->right_child->block.start_address,
+                        //        parent->right_child->block.end_address);
                         free(parent->right_child);
                         free(parent->left_child);
                         parent->right_child = NULL;
@@ -355,8 +332,8 @@ void deallocateMemory(struct MemoryNode *node)  // Function to deallocate memory
                 return;
             } else if (parent->right_child == node) {
                 parent->right_child->used = 0;  // the node is the right child
-                //printf("FREEING MEMORY FROM %d to %d \n", parent->right_child->block.start_address,
-                //       parent->right_child->block.end_address);
+                // printf("FREEING MEMORY FROM %d to %d \n", parent->right_child->block.start_address,
+                //        parent->right_child->block.end_address);
                 if (parent->left_child != NULL)  // left child is free
                 {
                     if (parent->left_child->left_child == NULL && parent->left_child->right_child == NULL &&
