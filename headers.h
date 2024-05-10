@@ -261,7 +261,7 @@ struct MemoryNode *allocate(int Psize, struct MemoryNode *root) {
                     root->left_child = createMemoryNode(half, root, root->block.start_address);
                     root->right_child = createMemoryNode(half, root, (root->left_child->block.end_address) + 1);
                     // printf("creating left and right children\n");
-                    if (half / 2 == Psize) {
+                    if (half / 2 < Psize && Psize < half/4) {
                         root->left_child->used = 1;
                         // printf("Allocating in created left child\n");
                         return root->left_child;
