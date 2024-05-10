@@ -141,14 +141,14 @@ void SRTNScheduling(int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, in
                     fprintf(memlog, "At time\t%d\tallocated\t%d\tbytes for process\t%d\tfrom\t%d\tto\t%d\n", clk,
                             Proc[g].MemSize, Proc[g].ID, Proc[g].MyMemory->block.start_address,
                             Proc[g].MyMemory->block.end_address);
-                    insertProcessHPF(minHeap, &Proc[g]);
+                    insertProcessSRTN(minHeap, &Proc[g]);
                 }
                 // printf("#%d  Process %d Recieved, ArivT: %d, RunT: %d, P: %d, PID: %d\n", clk, Proc[g].ID,
                 //        Proc[g].ArrivalT, Proc[g].RunT, Proc[g].P, Proc[g].pid);
 
                 // Update the process ID and enqueue it
                 kill(pid, SIGSTOP);
-                insertProcessSRTN(minHeap, &Proc[g]);
+                //insertProcessSRTN(minHeap, &Proc[g]);
                 // printf("Process %d arrived at %d\n", Proc[g].ID, clk);
                 g++;
             } else {
@@ -242,7 +242,7 @@ void SRTNScheduling(int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, in
                        p->MyMemory->block.start_address, p->MyMemory->block.end_address);
                 fprintf(memlog, "At time\t%d\tallocated\t%d\tbytes for process\t%d\tfrom\t%d\tto\t%d\t", clk,
                         p->MemSize, p->ID, p->MyMemory->block.start_address, p->MyMemory->block.end_address);
-                insertProcessHPF(minHeap, &Proc[g]);
+                insertProcessSRTN(minHeap, p);
             } else {
                 insertProcessBLK(BLK, p);
             }
