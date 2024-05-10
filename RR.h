@@ -248,6 +248,48 @@ void RoundRobinScheduling(int q, int ProcNum, FILE *fptr, float *totalWTA, int *
                 rr->runQuantum = rr->quantum;
             }
         }
+        // if (!isEmpty(rr) && rr->RUN == NULL) {
+        //     // Dequeue a process and set it to the RUN state
+        //     rr->RUN = dequeue(rr);
+        //     kill(rr->RUN->pid, SIGCONT);
+        //     if (rr->RUN->StartT != -1) {
+        //         printf("At time\t%d\tprocess\t%d\tresumed  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
+        //                rr->RUN->ID, rr->RUN->ArrivalT, rr->RUN->RunT, rr->RUN->RemT,
+        //                clk - rr->RUN->ArrivalT - rr->RUN->RunT + rr->RUN->RemT);
+        //         fprintf(fptr, "At time\t%d\tprocess\t%d\tresumed  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
+        //                 rr->RUN->ID, rr->RUN->ArrivalT, rr->RUN->RunT, rr->RUN->RemT,
+        //                 clk - rr->RUN->ArrivalT - rr->RUN->RunT + rr->RUN->RemT);
+        //     }
+        //     // Update the start time if necessary
+        //     if (rr->RUN->StartT == -1) {
+        //         rr->RUN->StartT = clk;
+        //         printf("At time\t%d\tprocess\t%d\tstarted  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
+        //                rr->RUN->ID, rr->RUN->ArrivalT, rr->RUN->RunT, rr->RUN->RemT,
+        //                clk - rr->RUN->ArrivalT - rr->RUN->RunT + rr->RUN->RemT);
+        //         fprintf(fptr, "At time\t%d\tprocess\t%d\tstarted  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
+        //                 rr->RUN->ID, rr->RUN->ArrivalT, rr->RUN->RunT, rr->RUN->RemT,
+        //                 clk - rr->RUN->ArrivalT - rr->RUN->RunT + rr->RUN->RemT);
+        //     }
+        // }
+        if (rr->RUN != NULL) {
+            (*totalUtil)++;
+            // printf("totalutil = %d\n", *totalUtil);
+        }
+        struct Process *p;
+        if (!isEmptyMin(BLK)) {
+            p = extractMinBLK(BLK);
+            p->MyMemory = allocate(p->MemSize, root);
+            if (p->MyMemory != NULL) {
+                // printing in memory.log the allocated memory
+                printf("At time\t%d\tallocated\t%d\tbytes for process\t%d\tfrom\t%d\tto\t%d\n", clk, p->MemSize, p->ID,
+                       p->MyMemory->block.start_address, p->MyMemory->block.end_address);
+                fprintf(memlog, "At time\t%d\tallocated\t%d\tbytes for process\t%d\tfrom\t%d\tto\t%d\n", clk,
+                        p->MemSize, p->ID, p->MyMemory->block.start_address, p->MyMemory->block.end_address);
+                enqueue(rr, p);
+            } else {
+                insertProcessBLK(BLK, p);
+            }
+        }
         if (!isEmpty(rr) && rr->RUN == NULL) {
             // Dequeue a process and set it to the RUN state
             rr->RUN = dequeue(rr);
@@ -269,25 +311,6 @@ void RoundRobinScheduling(int q, int ProcNum, FILE *fptr, float *totalWTA, int *
                 fprintf(fptr, "At time\t%d\tprocess\t%d\tstarted  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
                         rr->RUN->ID, rr->RUN->ArrivalT, rr->RUN->RunT, rr->RUN->RemT,
                         clk - rr->RUN->ArrivalT - rr->RUN->RunT + rr->RUN->RemT);
-            }
-        }
-        if (rr->RUN != NULL) {
-            (*totalUtil)++;
-            // printf("totalutil = %d\n", *totalUtil);
-        }
-        struct Process *p;
-        if (!isEmptyMin(BLK)) {
-            p = extractMinBLK(BLK);
-            p->MyMemory = allocate(p->MemSize, root);
-            if (p->MyMemory != NULL) {
-                // printing in memory.log the allocated memory
-                printf("At time\t%d\tallocated\t%d\tbytes for process\t%d\tfrom\t%d\tto\t%d\n", clk, p->MemSize, p->ID,
-                       p->MyMemory->block.start_address, p->MyMemory->block.end_address);
-                fprintf(memlog, "At time\t%d\tallocated\t%d\tbytes for process\t%d\tfrom\t%d\tto\t%d\n", clk,
-                        p->MemSize, p->ID, p->MyMemory->block.start_address, p->MyMemory->block.end_address);
-                enqueue(rr, p);
-            } else {
-                insertProcessBLK(BLK, p);
             }
         }
         // Wait until the clock time changes
