@@ -83,7 +83,7 @@ int MinTime(struct MinHeap *minHeap) {
 
 void SRTNScheduling(int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, int *totalUtil, float *WTA,
                     FILE *memlog) {
-    struct MinBLK *BLK = (struct MinBLK *)malloc(ProcNum * sizeof(struct MinBLK));
+    struct MinHeap *BLK = MinHeap(ProcNum);
 
     struct MemoryNode *root = createMemoryNode(MaxSize, NULL, 0);
 
@@ -233,7 +233,7 @@ void SRTNScheduling(int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, in
             // printf("totalutil = %d\n", *totalUtil);
         }
         struct Process *p;
-        if (!isEmptyBLK(BLK)) {
+        if (!isEmptyMin(BLK)) {
             p = extractMinBLK(BLK);
             p->MyMemory = allocate(p->MemSize, root);
             if (p->MyMemory != NULL) {
