@@ -11,7 +11,7 @@ void skipLine(FILE *);
 
 int msgq_id, msgid;
 
-int main(void) {
+int main(int argc, char* argv[]) {
     signal(SIGINT, clearResources);
 
     // Generate a unique key for the message queue
@@ -23,13 +23,16 @@ int main(void) {
     key_t key = ftok("progfile", 66);
     msgid = msgget(key, 0666 | IPC_CREAT);
 
-    int QUANTA = 0;
-    int ALGORITHM;
+    //gui sent parameters
+
+    int QUANTA = atoi(argv[2]);
+    int ALGORITHM = atoi(argv[3]);
+    char * file = argv[4];
 
     int NumberOfProcesses = 0;
     struct Process **Processes;
     int send_val;
-
+    //file ="processes.txt";
     // Open the file containing the processes
     FILE *fptr = fopen("processes.txt", "r");
 
@@ -53,12 +56,13 @@ int main(void) {
     printf("the number of processses is %d \n", NumberOfProcesses);
     fclose(fptr);
 
-    printf("Please enter the required scheduling algorithm \n0 FOR HPF \n1 for SRTN \n2 for RR\n");
-    scanf("%d", &ALGORITHM);
-    if (ALGORITHM == 2) {
-        printf("Enter the quanta for RR \n");
-        scanf("%d", &QUANTA);
-    }
+    // printf("Please enter the required scheduling algorithm \n0 FOR HPF \n1 for SRTN \n2 for RR\n");
+    // scanf("%d", &ALGORITHM);
+    // if (ALGORITHM == 2) {
+    //     printf("Enter the quanta for RR \n");
+    //     scanf("%d", &QUANTA);
+    // }
+    //gui sent parameters
 
     // Fork a child process to execute the clock process
     int pid = fork();
