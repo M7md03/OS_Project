@@ -205,6 +205,48 @@ void SRTNScheduling(int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, in
                 }
             }
         }
+        // if (!isEmptyMin(minHeap) && minHeap->RUN == NULL) {
+        //     // Extract a process and set it to the RUN state
+        //     minHeap->RUN = extractMinSRTN(minHeap);
+        //     kill(minHeap->RUN->pid, SIGCONT);
+        //     if (minHeap->RUN->StartT != -1) {
+        //         printf("At time\t%d\tprocess\t%d\tresumed  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
+        //                minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
+        //                clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT);
+        //         fprintf(fptr, "At time\t%d\tprocess\t%d\tresumed  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
+        //                 minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
+        //                 clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT);
+        //     }
+        //     // Update the start time if necessary
+        //     if (minHeap->RUN->StartT == -1) {
+        //         minHeap->RUN->StartT = clk;
+        //         printf("At time\t%d\tprocess\t%d\tstarted  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
+        //                minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
+        //                clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT);
+        //         fprintf(fptr, "At time\t%d\tprocess\t%d\tstarted  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
+        //                 minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
+        //                 clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT);
+        //     }
+        // }
+        if (minHeap->RUN != NULL) {
+            (*totalUtil)++;
+            // printf("totalutil = %d\n", *totalUtil);
+        }
+        struct Process *p;
+        if (!isEmptyMin(BLK)) {
+            p = extractMinBLK(BLK);
+            p->MyMemory = allocate(p->MemSize, root);
+            if (p->MyMemory != NULL) {
+                // printing in memory.log the allocated memory
+                printf("At time\t%d\tallocated\t%d\tbytes for process\t%d\tfrom\t%d\tto\t%d\t", clk, p->MemSize, p->ID,
+                       p->MyMemory->block.start_address, p->MyMemory->block.end_address);
+                fprintf(memlog, "At time\t%d\tallocated\t%d\tbytes for process\t%d\tfrom\t%d\tto\t%d\t", clk,
+                        p->MemSize, p->ID, p->MyMemory->block.start_address, p->MyMemory->block.end_address);
+                insertProcessSRTN(minHeap, p);
+            } else {
+                insertProcessBLK(BLK, p);
+            }
+        }
         if (!isEmptyMin(minHeap) && minHeap->RUN == NULL) {
             // Extract a process and set it to the RUN state
             minHeap->RUN = extractMinSRTN(minHeap);
@@ -226,25 +268,6 @@ void SRTNScheduling(int ProcNum, FILE *fptr, float *totalWTA, int *totalWait, in
                 fprintf(fptr, "At time\t%d\tprocess\t%d\tstarted  arr\t%d\ttotal\t%d\tremain\t%d\twait\t%d\n", clk,
                         minHeap->RUN->ID, minHeap->RUN->ArrivalT, minHeap->RUN->RunT, minHeap->RUN->RemT,
                         clk - minHeap->RUN->ArrivalT - minHeap->RUN->RunT + minHeap->RUN->RemT);
-            }
-        }
-        if (minHeap->RUN != NULL) {
-            (*totalUtil)++;
-            // printf("totalutil = %d\n", *totalUtil);
-        }
-        struct Process *p;
-        if (!isEmptyMin(BLK)) {
-            p = extractMinBLK(BLK);
-            p->MyMemory = allocate(p->MemSize, root);
-            if (p->MyMemory != NULL) {
-                // printing in memory.log the allocated memory
-                printf("At time\t%d\tallocated\t%d\tbytes for process\t%d\tfrom\t%d\tto\t%d\t", clk, p->MemSize, p->ID,
-                       p->MyMemory->block.start_address, p->MyMemory->block.end_address);
-                fprintf(memlog, "At time\t%d\tallocated\t%d\tbytes for process\t%d\tfrom\t%d\tto\t%d\t", clk,
-                        p->MemSize, p->ID, p->MyMemory->block.start_address, p->MyMemory->block.end_address);
-                insertProcessSRTN(minHeap, p);
-            } else {
-                insertProcessBLK(BLK, p);
             }
         }
         while (clk == getClk()) {
